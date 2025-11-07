@@ -854,27 +854,27 @@
                         <span id="shiStatus" class="text-xs px-2 py-1 rounded bg-slate-800 text-slate-400">Ready</span>
                     </div>
                     
-                    <!-- Voice-Over Narration Panel - PROMINENT -->
-                    <div class="mb-4 p-4 bg-gradient-to-r from-indigo-900/40 to-purple-900/40 border-2 border-indigo-500/60 rounded-lg shadow-lg">
-                        <div class="flex items-center justify-between mb-3">
-                            <div class="flex items-center gap-2">
-                                <span class="text-2xl">🎙️</span>
+                    <!-- Voice-Over Narration Panel - ULTRA PROMINENT -->
+                    <div class="mb-4 p-5 bg-gradient-to-br from-indigo-900/60 via-purple-900/50 to-indigo-900/60 border-3 border-indigo-400 rounded-xl shadow-2xl ring-4 ring-indigo-500/40 animate-pulse" style="background: linear-gradient(135deg, rgba(67, 56, 202, 0.7) 0%, rgba(139, 92, 246, 0.6) 50%, rgba(67, 56, 202, 0.7) 100%); border-width: 3px;">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <span class="text-4xl animate-bounce">🎙️</span>
                                 <div>
-                                    <span class="text-sm font-bold text-white">Live Activity Voice Guide</span>
-                                    <div class="text-xs text-indigo-300 mt-0.5">Guided narration explaining the dashboard</div>
+                                    <div class="text-base font-extrabold text-white mb-1">🎯 LIVE ACTIVITY VOICE GUIDE</div>
+                                    <div class="text-xs text-indigo-200 font-semibold">Real-time narration explaining each step of the dashboard</div>
                                 </div>
                             </div>
                             <div class="flex items-center gap-2">
-                                <button id="narrationToggle" class="px-3 py-1.5 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition shadow-md hover:shadow-lg" aria-label="Toggle voice narration">
+                                <button id="narrationToggle" class="px-4 py-2 text-sm font-bold bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white rounded-lg transition-all shadow-xl hover:shadow-2xl transform hover:scale-110" aria-label="Toggle voice narration">
                                     🔊 Enable Voice
                                 </button>
-                                <button id="narrationPause" class="px-3 py-1.5 text-xs font-semibold bg-slate-600 hover:bg-slate-500 text-white rounded-lg transition shadow-md hidden" aria-label="Pause narration">
+                                <button id="narrationPause" class="px-4 py-2 text-sm font-bold bg-slate-600 hover:bg-slate-500 text-white rounded-lg transition-all shadow-lg hidden" aria-label="Pause narration">
                                     ⏸️ Pause
                                 </button>
                             </div>
                         </div>
-                        <div id="narrationText" class="text-sm text-slate-100 leading-relaxed min-h-[80px] max-h-[150px] overflow-y-auto scroll-container p-3 bg-slate-900/50 rounded border border-indigo-500/30" aria-live="polite" role="status">
-                            <p class="text-slate-200 font-medium">Welcome to the Live Activity section. This dashboard demonstrates how our Digital Twin AI-Driven SOC autonomously detects, predicts, and responds to security threats in real-time. Watch as three AI agents work together: <span class="text-blue-400 font-semibold">ADA</span> detects threats, <span class="text-purple-400 font-semibold">TAA</span> predicts attack patterns, and <span class="text-green-400 font-semibold">CRA</span> ensures compliance. Click "🛡️ Live Threat Response" button above to begin a simulated threat scenario and see the autonomous defense system in action.</p>
+                        <div id="narrationText" class="text-sm text-slate-50 leading-relaxed min-h-[90px] max-h-[160px] overflow-y-auto scroll-container p-4 bg-black/50 rounded-lg border-2 border-indigo-400/60 shadow-inner" aria-live="polite" role="status" style="backdrop-filter: blur(10px);">
+                            <p class="text-white font-semibold">📖 <strong>Welcome to the Live Activity section!</strong> This dashboard demonstrates how our Digital Twin AI-Driven SOC autonomously detects, predicts, and responds to security threats in real-time. Watch as three AI agents work together: <span class="text-blue-400 font-bold">ADA</span> (Adaptive Defense Agent) detects threats with 99.2% accuracy, <span class="text-purple-400 font-bold">TAA</span> (Threat Analysis Agent) predicts attack patterns with 94.2% accuracy, and <span class="text-green-400 font-bold">CRA</span> (Compliance Agent) ensures 95.8% compliance. Click the "🛡️ Live Threat Response" button in the header to begin a simulated threat scenario. The narration below will update in real-time to explain each step as the autonomous defense system works.</p>
                         </div>
                     </div>
                     
@@ -1986,39 +1986,48 @@
         // Start
         animateMetrics();
         
-        // Verify narration panel is visible and initialized
-        window.addEventListener('DOMContentLoaded', function() {
+        // Verify and force narration panel visibility
+        function ensureNarrationVisible() {
             const timelineNarration = document.getElementById('narrationTextTimeline');
             const mainNarration = document.getElementById('narrationText');
+            const timelinePanel = timelineNarration?.closest('.mb-3');
+            const mainPanel = mainNarration?.closest('.mb-4');
             
-            if (timelineNarration) {
-                console.log('✅ Timeline narration panel found and visible');
-                timelineNarration.style.display = 'block';
-                timelineNarration.style.visibility = 'visible';
-                timelineNarration.style.opacity = '1';
-            } else {
-                console.error('❌ Timeline narration panel NOT found!');
-            }
+            console.log('🔍 Checking narration panels...');
+            console.log('Timeline narration element:', timelineNarration ? 'FOUND ✅' : 'NOT FOUND ❌');
+            console.log('Main narration element:', mainNarration ? 'FOUND ✅' : 'NOT FOUND ❌');
             
-            if (mainNarration) {
-                console.log('✅ Main narration panel found and visible');
-                mainNarration.style.display = 'block';
-                mainNarration.style.visibility = 'visible';
-                mainNarration.style.opacity = '1';
-            } else {
-                console.error('❌ Main narration panel NOT found!');
-            }
-            
-            // Force visibility
-            const narrationPanels = document.querySelectorAll('[id*="narration"]');
-            narrationPanels.forEach(panel => {
+            // Force visibility of panels
+            [timelinePanel, mainPanel].forEach(panel => {
                 if (panel) {
                     panel.style.display = 'block';
                     panel.style.visibility = 'visible';
                     panel.style.opacity = '1';
+                    panel.style.zIndex = '1000';
+                    panel.classList.remove('hidden');
                 }
             });
-        });
+            
+            // Force visibility of text elements
+            [timelineNarration, mainNarration].forEach(el => {
+                if (el) {
+                    el.style.display = 'block';
+                    el.style.visibility = 'visible';
+                    el.style.opacity = '1';
+                }
+            });
+        }
+        
+        // Run immediately and on DOM load
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', ensureNarrationVisible);
+        } else {
+            ensureNarrationVisible();
+        }
+        
+        // Also run after a short delay to catch any late-loading content
+        setTimeout(ensureNarrationVisible, 1000);
+        setTimeout(ensureNarrationVisible, 3000);
     </script>
 </body>
 </html>
