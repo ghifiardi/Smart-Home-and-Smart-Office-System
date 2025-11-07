@@ -916,6 +916,27 @@
                         </div>
                     </div>
 
+                    <!-- Voice-Over Narration for Live Activity Timeline -->
+                    <div class="mb-3 p-3 bg-gradient-to-r from-indigo-900/40 to-purple-900/40 border-2 border-indigo-500/60 rounded-lg shadow-lg">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xl">🎙️</span>
+                                <span class="text-xs font-bold text-white">Live Activity Voice Guide</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button id="narrationToggleTimeline" class="px-2 py-1 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white rounded transition" aria-label="Toggle voice narration">
+                                    🔊 Enable Voice
+                                </button>
+                                <button id="narrationPauseTimeline" class="px-2 py-1 text-xs font-semibold bg-slate-600 hover:bg-slate-500 text-white rounded transition hidden" aria-label="Pause narration">
+                                    ⏸️ Pause
+                                </button>
+                            </div>
+                        </div>
+                        <div id="narrationTextTimeline" class="text-xs text-slate-100 leading-relaxed min-h-[50px] max-h-[100px] overflow-y-auto scroll-container p-2 bg-slate-900/50 rounded border border-indigo-500/30" aria-live="polite" role="status">
+                            <p class="text-slate-200">This Live Activity timeline shows real-time security events as they occur. Watch as threats are detected, analyzed, and responded to automatically. The narration below explains what each event means and how the AI agents are working together to protect your infrastructure.</p>
+                        </div>
+                    </div>
+                    
                     <!-- Action Timeline -->
                     <div class="mb-3">
                         <div class="text-xs text-slate-400 mb-2">Response Timeline:</div>
@@ -1467,13 +1488,21 @@
             }
 
             setNarration(text, priority = 'normal') {
+                // Update main narration panel
                 const narrationEl = document.getElementById('narrationText');
                 if (narrationEl) {
-                    // Update text display
                     narrationEl.innerHTML = `<p class="text-slate-200">${text}</p>`;
                     narrationEl.scrollTop = narrationEl.scrollHeight;
-                    this.voiceOverText = text;
                 }
+
+                // Update timeline narration panel
+                const timelineNarrationEl = document.getElementById('narrationTextTimeline');
+                if (timelineNarrationEl) {
+                    timelineNarrationEl.innerHTML = `<p class="text-slate-200">${text}</p>`;
+                    timelineNarrationEl.scrollTop = timelineNarrationEl.scrollHeight;
+                }
+
+                this.voiceOverText = text;
 
                 // Speak if voice is enabled
                 if (this.isVoiceEnabled && !this.isPaused) {
@@ -1510,16 +1539,22 @@
                 this.isVoiceEnabled = !this.isVoiceEnabled;
                 const toggleBtn = document.getElementById('narrationToggle');
                 const pauseBtn = document.getElementById('narrationPause');
+                const timelineToggle = document.getElementById('narrationToggleTimeline');
+                const timelinePause = document.getElementById('narrationPauseTimeline');
                 
                 if (this.isVoiceEnabled) {
-                    toggleBtn.textContent = '🔇 Disable Voice';
-                    pauseBtn.classList.remove('hidden');
+                    if (toggleBtn) toggleBtn.textContent = '🔇 Disable Voice';
+                    if (pauseBtn) pauseBtn.classList.remove('hidden');
+                    if (timelineToggle) timelineToggle.textContent = '🔇 Disable Voice';
+                    if (timelinePause) timelinePause.classList.remove('hidden');
                     if (this.voiceOverText) {
                         this.speak(this.voiceOverText);
                     }
                 } else {
-                    toggleBtn.textContent = '🔊 Enable Voice';
-                    pauseBtn.classList.add('hidden');
+                    if (toggleBtn) toggleBtn.textContent = '🔊 Enable Voice';
+                    if (pauseBtn) pauseBtn.classList.add('hidden');
+                    if (timelineToggle) timelineToggle.textContent = '🔊 Enable Voice';
+                    if (timelinePause) timelinePause.classList.add('hidden');
                     this.synth.cancel();
                 }
             }
@@ -1816,18 +1851,59 @@
             orchestrator.runScenario();
         });
 
-        // Narration controls
+        // Narration controls - Main panel
         document.getElementById('narrationToggle')?.addEventListener('click', () => {
             narrationEngine.toggleVoice();
+            // Sync timeline button state
+            const timelineToggle = document.getElementById('narrationToggleTimeline');
+            const timelinePause = document.getElementById('narrationPauseTimeline');
+            if (narrationEngine.isVoiceEnabled) {
+                if (timelineToggle) timelineToggle.textContent = '🔇 Disable Voice';
+                if (timelinePause) timelinePause.classList.remove('hidden');
+            } else {
+                if (timelineToggle) timelineToggle.textContent = '🔊 Enable Voice';
+                if (timelinePause) timelinePause.classList.add('hidden');
+            }
         });
 
         document.getElementById('narrationPause')?.addEventListener('click', () => {
             narrationEngine.pause();
             const pauseBtn = document.getElementById('narrationPause');
+            const timelinePause = document.getElementById('narrationPauseTimeline');
             if (narrationEngine.isPaused) {
-                pauseBtn.textContent = '▶️ Resume';
+                if (pauseBtn) pauseBtn.textContent = '▶️ Resume';
+                if (timelinePause) timelinePause.textContent = '▶️ Resume';
             } else {
-                pauseBtn.textContent = '⏸️ Pause';
+                if (pauseBtn) pauseBtn.textContent = '⏸️ Pause';
+                if (timelinePause) timelinePause.textContent = '⏸️ Pause';
+            }
+        });
+
+        // Narration controls - Timeline panel (synchronized)
+        document.getElementById('narrationToggleTimeline')?.addEventListener('click', () => {
+            narrationEngine.toggleVoice();
+            // Sync main button state
+            const mainToggle = document.getElementById('narrationToggle');
+            const mainPause = document.getElementById('narrationPause');
+            if (narrationEngine.isVoiceEnabled) {
+                if (mainToggle) mainToggle.textContent = '🔇 Disable Voice';
+                if (mainPause) mainPause.classList.remove('hidden');
+            } else {
+                if (mainToggle) mainToggle.textContent = '🔊 Enable Voice';
+                if (mainPause) mainPause.classList.add('hidden');
+            }
+        });
+
+        document.getElementById('narrationPauseTimeline')?.addEventListener('click', () => {
+            narrationEngine.pause();
+            const pauseBtn = document.getElementById('narrationPauseTimeline');
+            const mainPause = document.getElementById('narrationPause');
+            if (narrationEngine.isPaused) {
+                if (pauseBtn) pauseBtn.textContent = '▶️ Resume';
+                if (mainPause) mainPause.textContent = '▶️ Resume';
+            } else {
+                if (pauseBtn) pauseBtn.textContent = '⏸️ Pause';
+                if (mainPause) mainPause.textContent = '⏸️ Pause';
             }
         });
 
