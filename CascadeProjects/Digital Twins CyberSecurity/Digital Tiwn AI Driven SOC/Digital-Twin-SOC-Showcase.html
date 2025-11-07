@@ -916,31 +916,37 @@
                         </div>
                     </div>
 
-                    <!-- Voice-Over Narration for Live Activity Timeline -->
-                    <div class="mb-3 p-3 bg-gradient-to-r from-indigo-900/40 to-purple-900/40 border-2 border-indigo-500/60 rounded-lg shadow-lg">
+                    <!-- Action Timeline -->
+                    <div class="mb-3">
                         <div class="flex items-center justify-between mb-2">
-                            <div class="flex items-center gap-2">
-                                <span class="text-xl">🎙️</span>
-                                <span class="text-xs font-bold text-white">Live Activity Voice Guide</span>
+                            <div class="text-xs text-slate-400">Response Timeline:</div>
+                            <div class="text-xs text-indigo-400">📊 Live Activity Log</div>
+                        </div>
+                        <div id="shiLog" class="scroll-container h-32 bg-slate-900/60 border border-slate-700 rounded p-2 space-y-1.5 text-xs leading-relaxed" role="log" aria-live="polite"></div>
+                    </div>
+                    
+                    <!-- Voice-Over Narration for Live Activity Timeline - PROMINENT AND ALWAYS VISIBLE -->
+                    <div class="mb-3 p-4 bg-gradient-to-br from-indigo-900/50 via-purple-900/40 to-indigo-900/50 border-2 border-indigo-400/80 rounded-xl shadow-2xl ring-2 ring-indigo-500/50" style="background: linear-gradient(135deg, rgba(67, 56, 202, 0.6) 0%, rgba(139, 92, 246, 0.5) 50%, rgba(67, 56, 202, 0.6) 100%);">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <span class="text-3xl animate-pulse">🎙️</span>
+                                <div>
+                                    <div class="text-sm font-bold text-white mb-0.5">🎯 Live Activity Voice Guide</div>
+                                    <div class="text-xs text-indigo-200">Real-time narration explaining the dashboard</div>
+                                </div>
                             </div>
                             <div class="flex items-center gap-2">
-                                <button id="narrationToggleTimeline" class="px-2 py-1 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white rounded transition" aria-label="Toggle voice narration">
+                                <button id="narrationToggleTimeline" class="px-3 py-1.5 text-xs font-bold bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white rounded-lg transition-all shadow-lg hover:shadow-xl transform hover:scale-105" aria-label="Toggle voice narration">
                                     🔊 Enable Voice
                                 </button>
-                                <button id="narrationPauseTimeline" class="px-2 py-1 text-xs font-semibold bg-slate-600 hover:bg-slate-500 text-white rounded transition hidden" aria-label="Pause narration">
+                                <button id="narrationPauseTimeline" class="px-3 py-1.5 text-xs font-bold bg-slate-600 hover:bg-slate-500 text-white rounded-lg transition-all shadow-lg hidden" aria-label="Pause narration">
                                     ⏸️ Pause
                                 </button>
                             </div>
                         </div>
-                        <div id="narrationTextTimeline" class="text-xs text-slate-100 leading-relaxed min-h-[50px] max-h-[100px] overflow-y-auto scroll-container p-2 bg-slate-900/50 rounded border border-indigo-500/30" aria-live="polite" role="status">
-                            <p class="text-slate-200">This Live Activity timeline shows real-time security events as they occur. Watch as threats are detected, analyzed, and responded to automatically. The narration below explains what each event means and how the AI agents are working together to protect your infrastructure.</p>
+                        <div id="narrationTextTimeline" class="text-sm text-slate-100 leading-relaxed min-h-[60px] max-h-[120px] overflow-y-auto scroll-container p-3 bg-black/40 rounded-lg border-2 border-indigo-400/50 shadow-inner" aria-live="polite" role="status" style="backdrop-filter: blur(10px);">
+                            <p class="text-slate-50 font-medium">📖 <strong>Welcome to the Live Activity section!</strong> This dashboard demonstrates how our Digital Twin AI-Driven SOC autonomously detects, predicts, and responds to security threats in real-time. Watch as three AI agents work together: <span class="text-blue-400 font-bold">ADA</span> detects threats, <span class="text-purple-400 font-bold">TAA</span> predicts attack patterns, and <span class="text-green-400 font-bold">CRA</span> ensures compliance. Click the "🛡️ Live Threat Response" button in the header to begin a simulated threat scenario and see the autonomous defense system in action. The narration will update in real-time to explain each step of the process.</p>
                         </div>
-                    </div>
-                    
-                    <!-- Action Timeline -->
-                    <div class="mb-3">
-                        <div class="text-xs text-slate-400 mb-2">Response Timeline:</div>
-                        <div id="shiLog" class="scroll-container h-32 bg-slate-900/60 border border-slate-700 rounded p-2 space-y-1.5 text-xs leading-relaxed" role="log" aria-live="polite"></div>
                     </div>
 
                     <!-- Results Summary -->
@@ -1979,6 +1985,40 @@
 
         // Start
         animateMetrics();
+        
+        // Verify narration panel is visible and initialized
+        window.addEventListener('DOMContentLoaded', function() {
+            const timelineNarration = document.getElementById('narrationTextTimeline');
+            const mainNarration = document.getElementById('narrationText');
+            
+            if (timelineNarration) {
+                console.log('✅ Timeline narration panel found and visible');
+                timelineNarration.style.display = 'block';
+                timelineNarration.style.visibility = 'visible';
+                timelineNarration.style.opacity = '1';
+            } else {
+                console.error('❌ Timeline narration panel NOT found!');
+            }
+            
+            if (mainNarration) {
+                console.log('✅ Main narration panel found and visible');
+                mainNarration.style.display = 'block';
+                mainNarration.style.visibility = 'visible';
+                mainNarration.style.opacity = '1';
+            } else {
+                console.error('❌ Main narration panel NOT found!');
+            }
+            
+            // Force visibility
+            const narrationPanels = document.querySelectorAll('[id*="narration"]');
+            narrationPanels.forEach(panel => {
+                if (panel) {
+                    panel.style.display = 'block';
+                    panel.style.visibility = 'visible';
+                    panel.style.opacity = '1';
+                }
+            });
+        });
     </script>
 </body>
 </html>
