@@ -1,0 +1,1904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="description" content="Digital Twin AI Driven SOC - Interactive Cybersecurity Simulation & Autonomous Response">
+    <title>🔮 Digital Twin AI Driven SOC - Interactive Showcase</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            background-attachment: fixed;
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        /* Improved focus states for accessibility */
+        *:focus-visible {
+            outline: 2px solid rgba(59, 130, 246, 0.8);
+            outline-offset: 2px;
+            border-radius: 4px;
+        }
+        
+        @keyframes particle-pulse {
+            0% { opacity: 1; transform: scale(1) translateY(0px); }
+            100% { opacity: 0; transform: scale(0) translateY(-20px); }
+        }
+        
+        @keyframes agent-glow {
+            0%, 100% { 
+                box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 0 0 25px rgba(59, 130, 246, 0.8), 0 0 40px rgba(59, 130, 246, 0.3);
+                transform: scale(1.02);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { 
+                opacity: 1;
+                filter: brightness(1);
+            }
+            50% { 
+                opacity: 0.8;
+                filter: brightness(1.2);
+            }
+        }
+        
+        .agent-active {
+            animation: agent-glow 1.5s ease-in-out infinite;
+            transition: all 0.3s ease;
+        }
+
+        .agent-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .agent-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(59, 130, 246, 0.8) !important;
+        }
+
+        .agent-card.active {
+            border-color: rgba(59, 130, 246, 1) !important;
+            background: rgba(59, 130, 246, 0.15) !important;
+        }
+        
+        .particle {
+            animation: particle-pulse 2s ease-out forwards;
+        }
+        
+        .progress-bar {
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .metric-card {
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            background: rgba(15, 23, 42, 0.7);
+        }
+        
+        .phase-container {
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.4s ease-out;
+        }
+
+        .metric-value {
+            font-variant-numeric: tabular-nums;
+        }
+
+        .log-entry {
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .ai-reasoning {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+            border-left: 4px solid rgba(34, 197, 94, 0.5);
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .reasoning-entry {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .reasoning-entry:last-child {
+            border-bottom: none;
+        }
+
+        .process-step {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+            padding: 10px;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 6px;
+            border-left: 3px solid rgba(59, 130, 246, 0.5);
+        }
+
+        .step-number {
+            flex-shrink: 0;
+            width: 24px;
+            height: 24px;
+            background: rgba(59, 130, 246, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.75rem;
+            color: rgba(59, 130, 246, 1);
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: rgba(226, 232, 240, 0.9);
+            margin-bottom: 4px;
+            font-size: 0.9rem;
+        }
+
+        .step-description {
+            color: rgba(148, 163, 184, 0.8);
+            font-size: 0.8rem;
+            line-height: 1.3;
+        }
+
+        .agent-thinking {
+            background: rgba(59, 130, 246, 0.05);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 12px;
+            font-size: 0.85rem;
+            color: rgba(191, 219, 254, 0.9);
+        }
+
+        .thinking-title {
+            font-weight: 600;
+            color: rgba(96, 165, 250, 1);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .thinking-content {
+            color: rgba(148, 163, 184, 0.9);
+            padding-left: 12px;
+            border-left: 2px solid rgba(96, 165, 250, 0.3);
+            line-height: 1.4;
+        }
+
+        .capability-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid rgba(34, 197, 94, 0.5);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: rgba(134, 239, 172, 0.9);
+            margin-right: 6px;
+            margin-bottom: 6px;
+        }
+
+        .data-flow {
+            background: rgba(139, 92, 246, 0.05);
+            border-left: 3px solid rgba(139, 92, 246, 0.5);
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: rgba(196, 181, 253, 0.9);
+            font-family: 'Courier New', monospace;
+        }
+
+        .processing-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: rgba(34, 197, 94, 0.7);
+            border-radius: 50%;
+            animation: pulse 1s ease-in-out infinite;
+            margin-right: 6px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        .scroll-container {
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .scroll-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .scroll-container::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.3);
+            border-radius: 3px;
+        }
+
+        .scroll-container::-webkit-scrollbar-thumb {
+            background: rgba(59, 130, 246, 0.3);
+            border-radius: 3px;
+        }
+
+        .scroll-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(59, 130, 246, 0.5);
+        }
+
+        /* Narration panel styles */
+        #narrationText {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            transition: all 0.3s ease;
+        }
+
+        #narrationText p {
+            margin: 0;
+            padding: 0;
+        }
+
+        #narrationToggle, #narrationPause {
+            transition: all 0.2s ease;
+        }
+
+        #narrationToggle:hover, #narrationPause:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Enhanced UI/UX Improvements */
+        @keyframes gradient-shift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .metric-bar {
+            position: relative;
+            overflow: hidden;
+            will-change: width;
+        }
+
+        .metric-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        .agent-card {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .agent-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .agent-card:hover::before {
+            left: 100%;
+        }
+
+        .phase-button {
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .phase-button:hover {
+            transform: translateX(4px);
+        }
+
+        .phase-button.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: rgba(59, 130, 246, 1);
+        }
+
+        .tooltip {
+            position: relative;
+        }
+
+        .tooltip:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 6px 10px;
+            background: rgba(15, 23, 42, 0.95);
+            color: rgba(226, 232, 240, 1);
+            border: 1px solid rgba(59, 130, 246, 0.5);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            z-index: 1000;
+            margin-bottom: 5px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .flex.flex-col.gap-4.overflow-hidden {
+                flex-direction: column !important;
+            }
+            
+            .flex-1.flex.flex-col.gap-4.overflow-hidden {
+                min-height: auto;
+            }
+        }
+
+        @media (max-width: 768px) {
+            #app {
+                padding: 0;
+            }
+
+            .bg-gradient-to-b.from-slate-900 {
+                padding: 1rem !important;
+            }
+
+            .text-2xl {
+                font-size: 1.25rem;
+            }
+
+            .text-3xl {
+                font-size: 1.5rem;
+            }
+
+            .flex.gap-3 {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .flex.justify-between.items-center {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.75rem;
+            }
+
+            .rounded-xl.p-6 {
+                padding: 1rem;
+            }
+
+            .px-6 {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .text-base {
+                font-size: 0.875rem;
+            }
+
+            .text-sm {
+                font-size: 0.75rem;
+            }
+
+            .px-3 {
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
+
+            .py-3 {
+                padding-top: 0.5rem;
+                padding-bottom: 0.5rem;
+            }
+        }
+
+        /* Enhanced Accessibility */
+        button:focus-visible,
+        .agent-tab:focus-visible,
+        .phase-button:focus-visible {
+            outline: 2px solid rgba(59, 130, 246, 1);
+            outline-offset: 2px;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+        }
+
+        /* Smooth transitions */
+        .transition {
+            transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 150ms;
+        }
+
+        /* Enhanced metric cards */
+        .metric-item {
+            transition: all 0.3s ease;
+            padding: 8px;
+            border-radius: 6px;
+        }
+
+        .metric-item:hover {
+            background: rgba(15, 23, 42, 0.3);
+            transform: translateX(4px);
+        }
+
+        /* Better agent tab styling */
+        .agent-tab {
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .agent-tab:hover {
+            background: rgba(59, 130, 246, 0.15) !important;
+            transform: translateY(-1px);
+        }
+
+        .agent-tab.active {
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Enhanced process steps */
+        .process-step {
+            transition: all 0.3s ease;
+            animation: slideInRight 0.4s ease-out;
+            animation-fill-mode: both;
+        }
+
+        .process-step:hover {
+            background: rgba(15, 23, 42, 0.7);
+            transform: translateX(4px);
+            border-left-color: rgba(59, 130, 246, 0.8);
+        }
+
+        .process-step:nth-child(1) { animation-delay: 0.05s; }
+        .process-step:nth-child(2) { animation-delay: 0.1s; }
+        .process-step:nth-child(3) { animation-delay: 0.15s; }
+        .process-step:nth-child(4) { animation-delay: 0.2s; }
+        .process-step:nth-child(5) { animation-delay: 0.25s; }
+        .process-step:nth-child(6) { animation-delay: 0.3s; }
+
+        /* Enhanced data flow entries */
+        .data-flow {
+            transition: all 0.2s ease;
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        .data-flow:hover {
+            background: rgba(139, 92, 246, 0.1);
+            transform: translateX(4px);
+            border-left-width: 4px;
+        }
+
+        /* Improved button states */
+        #toggleBtn {
+            position: relative;
+            overflow: hidden;
+        }
+
+        #toggleBtn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        #toggleBtn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        #toggleBtn:active {
+            transform: scale(0.98);
+        }
+
+        /* Enhanced completion message */
+        #completionMessage {
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        /* Better scrollbar for Firefox */
+        .scroll-container {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(59, 130, 246, 0.3) rgba(15, 23, 42, 0.3);
+        }
+
+        /* Loading state for reasoning content */
+        .reasoning-loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        /* Enhanced phase container transitions */
+        .phase-container {
+            will-change: transform, opacity;
+        }
+
+        /* Better text contrast */
+        .text-slate-400 {
+            color: rgba(148, 163, 184, 0.9);
+        }
+
+        .text-slate-500 {
+            color: rgba(148, 163, 184, 0.8);
+        }
+
+        /* Touch-friendly on mobile */
+        @media (hover: none) and (pointer: coarse) {
+            button, .agent-card, .agent-tab, .phase-button {
+                min-height: 44px;
+                min-width: 44px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="w-full h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-gradient-to-b from-slate-900 to-transparent p-4 border-b border-slate-700/30 z-20" role="banner">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center max-w-full px-4 md:px-6 gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-white">🔮 Digital Twin AI Driven SOC</h1>
+                    <p class="text-slate-400 text-xs mt-1">Interactive Cybersecurity Simulation & Autonomous Response</p>
+                    <div class="text-xs text-slate-500 mt-1">📖 Flow: Network → AI Agents → Metrics → Live Response → Controls</div>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-4 items-end sm:items-center w-full sm:w-auto">
+                    <div class="text-right sm:text-right">
+                        <div class="text-xs text-slate-400" id="progressLabel">Transformation Progress</div>
+                        <div class="text-lg font-bold text-white metric-value" aria-live="polite" aria-atomic="true">
+                            <span id="progressPercent" aria-label="Progress percentage">0</span>%
+                        </div>
+                    </div>
+                    <button 
+                        id="toggleBtn" 
+                        class="px-6 py-2 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white rounded-lg font-semibold transition shadow-lg hover:shadow-xl"
+                        aria-label="Play or pause the transformation animation"
+                        aria-pressed="true"
+                    >▶ Play</button>
+                    <button
+                        id="shiBtn"
+                        class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-lg font-semibold transition shadow-lg hover:shadow-xl"
+                        aria-label="Run live threat response demonstration"
+                    >🛡️ Live Threat Response</button>
+                    <button
+                        id="investorBtn"
+                        class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-lg font-semibold transition shadow-lg hover:shadow-xl"
+                        aria-label="Open investor demo overlay"
+                    >🎬 Investor Demo</button>
+                    <a
+                        href="technology-dashboard.html"
+                        class="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 active:bg-cyan-800 text-white rounded-lg font-semibold transition shadow-lg hover:shadow-xl"
+                        aria-label="View technology dashboard"
+                    >🔧 Technology</a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col lg:flex-row gap-4 p-2 md:p-4 overflow-hidden" role="main">
+            <!-- Left Column: Phase & Agent Reasoning (60%) -->
+            <div class="flex-1 flex flex-col gap-4 overflow-hidden">
+                <!-- Phase Overview -->
+                <div id="phaseContainer" class="rounded-xl p-6 bg-gradient-to-br from-blue-600/10 to-cyan-600/10 border border-slate-600/30 phase-container relative overflow-hidden" style="flex: 0 0 auto;">
+                    <div id="particlesContainer" class="absolute inset-0 opacity-30"></div>
+                    
+                    <div class="relative z-10">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <div class="text-xs font-semibold text-slate-400 mb-1">
+                                    Phase <span id="currentPhase">1</span> / <span id="totalPhases">4</span> — Quarter <span id="quarterNum">Q1</span>
+                                </div>
+                                <h2 id="phaseName" class="text-3xl font-bold text-white mb-1">Cognitive Telemetry</h2>
+                                <p id="phaseSubtitle" class="text-base text-slate-200 mb-3">Teaching the system to see</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xs text-slate-400">Theme</div>
+                                <div id="phaseTheme" class="text-sm font-semibold text-blue-300">Data Visibility</div>
+                            </div>
+                        </div>
+                        <p id="phaseDescription" class="text-slate-300 text-sm mb-3">Deploying Chronicle SIEM integration and establishing BigQuery data lake</p>
+
+                        <!-- Agents -->
+                        <div class="mb-2">
+                            <div class="text-xs text-slate-400 mb-2">💡 Step 2: AI Agents - Click to see reasoning</div>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-3" role="group" aria-label="AI Agents">
+                            <div id="agentADA" class="flex-1 px-3 py-3 rounded-lg border-2 border-slate-600 bg-slate-800/50 transition agent-card" 
+                                 role="button" 
+                                 tabindex="0"
+                                 aria-label="ADA - Adaptive Defense Agent"
+                                 aria-pressed="false"
+                                 title="🛡️ ADA: Detects threats in real-time (99.2% accuracy)">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="w-4 h-4" aria-hidden="true">🛡</span>
+                                    <span class="font-bold text-slate-300 text-sm">ADA</span>
+                                </div>
+                                <div class="text-xs text-slate-400">Adaptive Defense</div>
+                            </div>
+                            <div id="agentTAA" class="flex-1 px-3 py-3 rounded-lg border-2 border-slate-600 bg-slate-800/50 transition agent-card"
+                                 role="button"
+                                 tabindex="0"
+                                 aria-label="TAA - Threat Analysis Agent"
+                                 aria-pressed="false"
+                                 title="🧠 TAA: Predicts attack patterns (94.2% accuracy)">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="w-4 h-4" aria-hidden="true">🧠</span>
+                                    <span class="font-bold text-slate-300 text-sm">TAA</span>
+                                </div>
+                                <div class="text-xs text-slate-400">Threat Analysis</div>
+                            </div>
+                            <div id="agentCRA" class="flex-1 px-3 py-3 rounded-lg border-2 border-slate-600 bg-slate-800/50 transition agent-card"
+                                 role="button"
+                                 tabindex="0"
+                                 aria-label="CRA - Compliance Agent"
+                                 aria-pressed="false"
+                                 title="✓ CRA: Ensures compliance (95.8% score)">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="w-4 h-4" aria-hidden="true">✓</span>
+                                    <span class="font-bold text-slate-300 text-sm">CRA</span>
+                                </div>
+                                <div class="text-xs text-slate-400">Compliance</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LLM-Powered Agent Reasoning Panel -->
+                <div class="flex-1 rounded-xl bg-slate-950 border border-slate-700 p-4 flex flex-col overflow-hidden">
+                    <div class="flex items-center gap-2 mb-3 pb-3 border-b border-slate-700">
+                        <span class="text-cyan-400">💭</span>
+                        <span class="text-sm font-semibold text-white">AI Agent Reasoning & LLM Analysis</span>
+                        <span class="processing-indicator"></span>
+                    </div>
+
+                    <!-- Tabs for different agents -->
+                    <div class="flex gap-2 mb-3 pb-3 border-b border-slate-700" role="tablist" aria-label="Agent selection tabs">
+                        <button class="agent-tab active px-3 py-1 text-xs font-semibold rounded transition" 
+                                data-agent="ADA" 
+                                role="tab"
+                                aria-selected="true"
+                                aria-controls="reasoningContent"
+                                style="background: rgba(59, 130, 246, 0.3); color: rgba(96, 165, 250, 1);">ADA</button>
+                        <button class="agent-tab px-3 py-1 text-xs font-semibold rounded transition" 
+                                data-agent="TAA"
+                                role="tab"
+                                aria-selected="false"
+                                aria-controls="reasoningContent"
+                                style="color: rgba(148, 163, 184, 0.7);">TAA</button>
+                        <button class="agent-tab px-3 py-1 text-xs font-semibold rounded transition" 
+                                data-agent="CRA"
+                                role="tab"
+                                aria-selected="false"
+                                aria-controls="reasoningContent"
+                                style="color: rgba(148, 163, 184, 0.7);">CRA</button>
+                    </div>
+
+                    <!-- Agent Reasoning Content -->
+                    <div id="reasoningContent" class="flex-1 scroll-container space-y-2">
+                        <!-- Content populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Process Details & Metrics (40%) -->
+            <div class="flex-1 flex flex-col gap-4 overflow-hidden">
+                <!-- Process Details Panel -->
+                <div class="flex-1 rounded-xl bg-slate-950 border border-slate-700 p-4 flex flex-col overflow-hidden">
+                    <div class="flex items-center gap-2 mb-3 pb-3 border-b border-slate-700">
+                        <span class="text-orange-400">⚙️</span>
+                        <span class="text-sm font-semibold text-white">Process Flow & Data Architecture</span>
+                    </div>
+
+                    <div id="processFlow" class="flex-1 scroll-container space-y-2">
+                        <!-- Process steps populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Metrics Dashboard (Compact) -->
+                <div class="rounded-xl bg-slate-950 border border-slate-700 p-4">
+                    <div class="flex items-center justify-between mb-3 pb-3 border-b border-slate-700">
+                        <div class="flex items-center gap-2">
+                            <span class="text-green-400">📊</span>
+                            <span class="text-sm font-semibold text-white">Step 3: Key Metrics</span>
+                        </div>
+                        <div class="text-xs text-slate-400">Live Updates</div>
+                    </div>
+
+                    <div class="space-y-3" role="region" aria-label="Transformation metrics">
+                        <!-- MTTR -->
+                        <div class="metric-item tooltip" data-tooltip="Mean Time To Response - Lower is better">
+                            <div class="flex justify-between items-center mb-1">
+                                <div class="text-xs font-semibold text-slate-300">MTTR</div>
+                                <div class="text-sm font-bold text-white metric-value" aria-live="polite">
+                                    <span id="mttr">30</span> min
+                                </div>
+                            </div>
+                            <div class="w-full h-2 bg-slate-700 rounded-full overflow-hidden">
+                                <div id="mttrBar" class="h-full bg-gradient-to-r from-orange-500 to-red-500 metric-bar transition-all duration-500" style="width: 90%;" role="progressbar" aria-valuenow="30" aria-valuemin="0" aria-valuemax="30" aria-label="MTTR progress"></div>
+                            </div>
+                        </div>
+
+                        <!-- False Positives -->
+                        <div class="metric-item tooltip" data-tooltip="False Positive Rate - Lower is better">
+                            <div class="flex justify-between items-center mb-1">
+                                <div class="text-xs font-semibold text-slate-300">False Positives</div>
+                                <div class="text-sm font-bold text-white metric-value" aria-live="polite">
+                                    <span id="falsePos">42</span>%
+                                </div>
+                            </div>
+                            <div class="w-full h-2 bg-slate-700 rounded-full overflow-hidden">
+                                <div id="falsePosBar" class="h-full bg-gradient-to-r from-yellow-500 to-orange-500 metric-bar transition-all duration-500" style="width: 84%;" role="progressbar" aria-valuenow="42" aria-valuemin="0" aria-valuemax="42" aria-label="False positives progress"></div>
+                            </div>
+                        </div>
+
+                        <!-- Entropy -->
+                        <div class="metric-item tooltip" data-tooltip="System Entropy - Lower indicates better organization">
+                            <div class="flex justify-between items-center mb-1">
+                                <div class="text-xs font-semibold text-slate-300">System Entropy</div>
+                                <div class="text-sm font-bold text-white metric-value" aria-live="polite">
+                                    <span id="entropy">1.0</span>
+                                </div>
+                            </div>
+                            <div class="w-full h-2 bg-slate-700 rounded-full overflow-hidden">
+                                <div id="entropyBar" class="h-full bg-gradient-to-r from-purple-500 to-pink-500 metric-bar transition-all duration-500" style="width: 100%;" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-label="System entropy progress"></div>
+                            </div>
+                        </div>
+
+                        <!-- Compliance -->
+                        <div class="metric-item tooltip" data-tooltip="Compliance Score - Higher is better">
+                            <div class="flex justify-between items-center mb-1">
+                                <div class="text-xs font-semibold text-slate-300">Compliance</div>
+                                <div class="text-sm font-bold text-white metric-value" aria-live="polite">
+                                    <span id="compliance">80</span>%
+                                </div>
+                            </div>
+                            <div class="w-full h-2 bg-slate-700 rounded-full overflow-hidden">
+                                <div id="complianceBar" class="h-full bg-gradient-to-r from-blue-500 to-cyan-500 metric-bar transition-all duration-500" style="width: 80%;" role="progressbar" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100" aria-label="Compliance progress"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phase Navigation -->
+                <nav class="rounded-xl bg-slate-950 border border-slate-700 p-3" aria-label="Phase navigation">
+                    <div class="text-xs font-semibold text-slate-300 mb-2">Step 5: Demo Controls</div>
+                    <div class="text-xs text-slate-500 mb-2">Use Play/Pause to control transformation phases</div>
+                    <div class="text-xs font-semibold text-slate-300 mb-2 mt-3">PHASES</div>
+                    <div id="phaseButtons" class="space-y-1" role="tablist" aria-label="Transformation phases">
+                        <!-- Buttons generated by JS -->
+                    </div>
+                </nav>
+                
+                <!-- Autonomous Self-Healing Panel -->
+                <section class="rounded-xl bg-slate-950 border border-slate-700 p-4" aria-label="Autonomous Self-Healing">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <span>🛡️</span>
+                            <span class="text-sm font-semibold text-white">Step 4: Live Threat Response</span>
+                        </div>
+                        <span id="shiStatus" class="text-xs px-2 py-1 rounded bg-slate-800 text-slate-400">Ready</span>
+                    </div>
+                    <div class="text-xs text-slate-500 mb-2">💡 Click "Live Threat Response" button to see autonomous defense in action</div>
+                    
+                    <!-- Voice-Over Narration Panel -->
+                    <div class="mb-3 p-3 bg-gradient-to-r from-indigo-900/30 to-purple-900/30 border border-indigo-700/40 rounded-lg">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-2">
+                                <span class="text-indigo-400">🎙️</span>
+                                <span class="text-xs font-semibold text-white">Live Activity Narration</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button id="narrationToggle" class="px-2 py-1 text-xs bg-indigo-700 hover:bg-indigo-600 text-white rounded transition" aria-label="Toggle voice narration">
+                                    🔊 Enable Voice
+                                </button>
+                                <button id="narrationPause" class="px-2 py-1 text-xs bg-slate-700 hover:bg-slate-600 text-white rounded transition hidden" aria-label="Pause narration">
+                                    ⏸️ Pause
+                                </button>
+                            </div>
+                        </div>
+                        <div id="narrationText" class="text-xs text-slate-200 leading-relaxed min-h-[60px] max-h-[120px] overflow-y-auto scroll-container" aria-live="polite" role="status">
+                            <p class="text-slate-400 italic">Welcome to the Live Activity section. This dashboard demonstrates how our Digital Twin AI-Driven SOC autonomously detects, predicts, and responds to security threats in real-time. Watch as three AI agents work together: ADA detects threats, TAA predicts attack patterns, and CRA ensures compliance. Click "Live Threat Response" to begin a simulated threat scenario and see the autonomous defense system in action.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Threat Summary Card -->
+                    <div id="shiThreatCard" class="hidden mb-3 p-3 bg-gradient-to-r from-red-900/20 to-orange-900/20 border border-red-700/30 rounded-lg">
+                        <div class="flex items-start gap-2 mb-2">
+                            <span class="text-red-400 text-lg">⚠️</span>
+                            <div class="flex-1">
+                                <div class="text-sm font-semibold text-red-300" id="shiThreatTitle">Threat Detected</div>
+                                <div class="text-xs text-slate-400 mt-1" id="shiThreatDesc">-</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Agent Status Cards -->
+                    <div class="grid grid-cols-3 gap-2 mb-3">
+                        <div class="bg-slate-900 rounded-lg p-2 border border-slate-700">
+                            <div class="flex items-center gap-1 mb-1">
+                                <span class="text-blue-400 text-xs">🛡️</span>
+                                <div class="text-xs text-slate-400">ADA Detects</div>
+                            </div>
+                            <div id="shiStepDetect" class="text-xs font-semibold text-slate-300">Waiting...</div>
+                        </div>
+                        <div class="bg-slate-900 rounded-lg p-2 border border-slate-700">
+                            <div class="flex items-center gap-1 mb-1">
+                                <span class="text-purple-400 text-xs">🧠</span>
+                                <div class="text-xs text-slate-400">TAA Predicts</div>
+                            </div>
+                            <div id="shiStepDecide" class="text-xs font-semibold text-slate-300">Waiting...</div>
+                        </div>
+                        <div class="bg-slate-900 rounded-lg p-2 border border-slate-700">
+                            <div class="flex items-center gap-1 mb-1">
+                                <span class="text-green-400 text-xs">✓</span>
+                                <div class="text-xs text-slate-400">CRA Validates</div>
+                            </div>
+                            <div id="shiStepRemediate" class="text-xs font-semibold text-slate-300">Waiting...</div>
+                        </div>
+                    </div>
+
+                    <!-- Action Timeline -->
+                    <div class="mb-3">
+                        <div class="text-xs text-slate-400 mb-2">Response Timeline:</div>
+                        <div id="shiLog" class="scroll-container h-32 bg-slate-900/60 border border-slate-700 rounded p-2 space-y-1.5 text-xs leading-relaxed" role="log" aria-live="polite"></div>
+                    </div>
+
+                    <!-- Results Summary -->
+                    <div id="shiResults" class="hidden mt-3 p-3 bg-gradient-to-r from-green-900/20 to-emerald-900/20 border border-green-700/30 rounded-lg">
+                        <div class="flex items-start gap-2">
+                            <span class="text-green-400 text-lg">✅</span>
+                            <div class="flex-1">
+                                <div class="text-sm font-semibold text-green-300 mb-1">Threat Contained</div>
+                                <div class="text-xs text-slate-300 space-y-1" id="shiResultsList"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- Completion Message -->
+        <div id="completionMessage" class="hidden bg-gradient-to-t from-slate-900 to-transparent p-4 text-center border-t border-slate-700">
+            <h3 class="text-xl font-bold text-green-400 mb-1">✓ Transformation Complete</h3>
+            <p class="text-slate-300 text-sm">
+                3× faster response • 40% less noise • 95%+ compliant • Federated defense
+            </p>
+        </div>
+    </div>
+
+    <!-- Investor Demo Overlay -->
+    <div id="investorOverlay" class="fixed inset-0 bg-slate-900/90 hidden z-40">
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="w-full max-w-3xl bg-slate-950 border border-slate-700 rounded-xl shadow-2xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <span>🎯</span>
+                        <span class="text-white font-semibold">Investor Demo</span>
+                    </div>
+                    <button id="investorClose" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded">✕</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+                    <div class="bg-slate-900 rounded p-3">
+                        <div class="text-slate-400 text-xs">Time to Value</div>
+                        <div class="text-white text-xl font-bold">12 weeks</div>
+                    </div>
+                    <div class="bg-slate-900 rounded p-3">
+                        <div class="text-slate-400 text-xs">Response Speed</div>
+                        <div class="text-white text-xl font-bold">73% faster</div>
+                    </div>
+                    <div class="bg-slate-900 rounded p-3">
+                        <div class="text-slate-400 text-xs">False Positives</div>
+                        <div class="text-white text-xl font-bold">-79%</div>
+                    </div>
+                </div>
+                <div class="rounded border border-slate-700 bg-slate-900/60 p-4 min-h-[220px]">
+                    <div id="investorSlideTitle" class="text-white text-lg font-semibold mb-1">—</div>
+                    <div id="investorSlideSubtitle" class="text-slate-300 text-sm mb-3">—</div>
+                    <ul id="investorSlidePoints" class="list-disc list-inside text-slate-300 text-sm space-y-1"></ul>
+                </div>
+                <div class="flex items-center justify-between mt-4">
+                    <div class="text-xs text-slate-400">Step <span id="investorStep">1</span> / <span id="investorTotal">3</span></div>
+                    <div class="flex gap-2">
+                        <button id="investorPrev" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded">⟨ Prev</button>
+                        <button id="investorNext" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded">Next ⟩</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const phases = [
+            {
+                name: 'Cognitive Telemetry',
+                subtitle: 'Teaching the system to see',
+                quarter: 'Q1',
+                theme: 'Data Visibility & Correlation',
+                description: 'Deploying Chronicle SIEM and establishing BigQuery data lake',
+                finalMetrics: { mttr: 15, falsePositives: 15, entropy: 0.8, compliance: 82 },
+                duration: 7000,
+                color: 'from-blue-600 to-cyan-600',
+                primaryAgent: 'ADA',
+                processSteps: [
+                    { title: 'Telemetry Ingestion', desc: 'Chronicle SIEM collects 50M+ security events from firewalls, APIs, endpoints' },
+                    { title: 'Data Normalization', desc: 'Convert disparate log formats into unified schema (JSON, Parquet)' },
+                    { title: 'BigQuery Integration', desc: 'Stream normalized data to petabyte-scale data lake for real-time analysis' },
+                    { title: 'ML Model Training', desc: 'Train correlation models on 6 months of historical security events' },
+                    { title: 'Alert Correlation', desc: 'Apply ML models to reduce alert noise from 42% to 15% false positives' },
+                    { title: 'Validation', desc: 'Achieve 90% alert correlation accuracy and establish baseline metrics' }
+                ],
+                agentReasonings: {
+                    ADA: {
+                        thinking: 'Analyzing telemetry patterns...',
+                        reasoning: [
+                            'Processing 50 million security events from multiple sources',
+                            'Identifying correlations between firewall logs, endpoint data, and API events',
+                            'Classifying threat patterns: 90% accurate detection of malicious IPs',
+                            'Establishing baseline behavior profiles for normal network activity',
+                            'Creating detection rules for common attack signatures',
+                            'Current alert reduction: 42% → 15% false positives'
+                        ]
+                    },
+                    TAA: {
+                        thinking: 'Learning threat patterns...',
+                        reasoning: [
+                            'Analyzing historical attack patterns from 6 months of data',
+                            'Identifying 127 unique threat signatures in datasets',
+                            'Mapping attack chains: Reconnaissance → Exploitation → Exfiltration',
+                            'Building threat timeline models for incident sequence prediction',
+                            'Correlating indicators of compromise (IoCs) across sources',
+                            'Foundation established for predictive models in Phase 2'
+                        ]
+                    },
+                    CRA: {
+                        thinking: 'Establishing compliance baseline...',
+                        reasoning: [
+                            'Auditing current compliance posture: 80% against PDP requirements',
+                            'Documenting data retention policies for 50M+ daily events',
+                            'Verifying access controls on Chronicle SIEM and BigQuery',
+                            'Establishing audit logging for all security operations',
+                            'Creating compliance templates for automated reporting',
+                            'Target compliance: 82% (achievable with Phase 1 controls)'
+                        ]
+                    }
+                }
+            },
+            {
+                name: 'Predictive Twin Fabric',
+                subtitle: 'Teaching the system to think ahead',
+                quarter: 'Q2',
+                theme: 'Threat Forecasting & Simulation',
+                description: 'Deploying digital twin environment and threat prediction models',
+                finalMetrics: { mttr: 12, falsePositives: 12, entropy: 0.7, compliance: 85 },
+                duration: 7000,
+                color: 'from-purple-600 to-pink-600',
+                primaryAgent: 'TAA',
+                processSteps: [
+                    { title: 'Digital Twin Creation', desc: 'Replicate production network in isolated sandbox environment' },
+                    { title: 'Attack Simulation', desc: 'Run 10,000+ attack scenarios against twin using MITRE ATT&CK framework' },
+                    { title: 'Prediction Model Training', desc: 'Train LLM on attack sequences to forecast next-stage threat moves' },
+                    { title: 'What-If Scenarios', desc: 'Generate response strategies for predicted attack paths' },
+                    { title: 'Response Optimization', desc: 'Compare response effectiveness across 1000s of scenario variations' },
+                    { title: 'Validation & Deployment', desc: 'Achieve 60% faster response time in real incidents' }
+                ],
+                agentReasonings: {
+                    ADA: {
+                        thinking: 'Testing response strategies...',
+                        reasoning: [
+                            'Simulating 5,000 attack scenarios in digital twin environment',
+                            'Testing response tactics: isolation, remediation, forensics',
+                            'Measuring response effectiveness for each scenario variation',
+                            'Identifying optimal response sequences that minimize damage',
+                            'Learning which countermeasures work best for different threats',
+                            'Ready to execute responses autonomously in Phase 3'
+                        ]
+                    },
+                    TAA: {
+                        thinking: 'Predicting threat evolution...',
+                        reasoning: [
+                            'Using LLM to analyze: "If attacker achieves X, next move is likely Y or Z"',
+                            'Building probabilistic threat trees for 50+ attack patterns',
+                            'Predicting attacker behavior with 78% accuracy',
+                            'Forecasting threat progression: Reconnaissance → Lateral movement → Exfiltration',
+                            'Creating early warning indicators for attack stage transitions',
+                            'Achieving 60% faster incident response through prediction'
+                        ]
+                    },
+                    CRA: {
+                        thinking: 'Validating response compliance...',
+                        reasoning: [
+                            'Checking: Can we execute this response without violating PDP?',
+                            'Verifying isolation procedures maintain audit trail requirements',
+                            'Ensuring remediation doesn\'t violate data residency rules',
+                            'Documenting response decisions for regulatory compliance',
+                            'Updating compliance templates based on scenario learnings',
+                            'Compliance improvement: 82% → 85%'
+                        ]
+                    }
+                }
+            },
+            {
+                name: 'Chronometric Simulation',
+                subtitle: 'Teaching the system to plan',
+                quarter: 'Q3',
+                theme: 'Time-Aware Autonomous Response',
+                description: 'Deploying reinforcement learning and autonomous response planning',
+                finalMetrics: { mttr: 8, falsePositives: 10, entropy: 0.6, compliance: 90 },
+                duration: 7000,
+                color: 'from-orange-600 to-red-600',
+                primaryAgent: 'ADA',
+                processSteps: [
+                    { title: 'Time-Series Modeling', desc: 'Build temporal threat models tracking attack progression over minutes/hours' },
+                    { title: 'Reinforcement Learning', desc: 'Train RL agents via 1 million simulated attack/response sequences' },
+                    { title: 'Autonomous Decision Making', desc: 'Deploy agents to make response decisions in milliseconds' },
+                    { title: 'Response Automation', desc: 'Automate containment, isolation, and remediation without human delay' },
+                    { title: 'Learning Loop', desc: 'Each incident teaches system optimal response for future similar attacks' },
+                    { title: 'Achievement', desc: 'Achieve sub-10-minute MTTR with 99% correct autonomous decisions' }
+                ],
+                agentReasonings: {
+                    ADA: {
+                        thinking: 'Executing autonomous response...',
+                        reasoning: [
+                            'Detected threat at T+0.5 sec using ML model from Phase 1',
+                            'Predicted threat path at T+1.2 sec using TAA predictions',
+                            'Selected optimal response at T+2.1 sec via RL model (1M simulations)',
+                            'Executed isolation at T+3.0 sec - no human approval needed',
+                            'Initiated remediation at T+4.2 sec in parallel with forensics',
+                            'Total MTTR: 8 minutes (vs 30 min baseline) - 73% improvement'
+                        ]
+                    },
+                    TAA: {
+                        thinking: 'Learning from incident...',
+                        reasoning: [
+                            'Analyzed incident: Attack used technique XYZ from MITRE ATT&CK',
+                            'Comparing: "Our RL model recommended response A, we chose A, outcome: success"',
+                            'Updating models: This attack-response pair now weights +0.15 confidence',
+                            'Generating insight: 87% of similar attacks stopped at isolation stage',
+                            'Sharing learning: Updated model deployed to TAA reasoning engine',
+                            'Each incident = 1 more data point training the prediction system'
+                        ]
+                    },
+                    CRA: {
+                        thinking: 'Automating compliant response...',
+                        reasoning: [
+                            'Verifying: All autonomous responses comply with PDP regulations',
+                            'Logging: Every decision, action, and outcome for audit trail',
+                            'Checking: Data handling during isolation complies with retention policy',
+                            'Validating: Remediation scripts don\'t access protected data illegally',
+                            'Recording: Full incident response for regulatory reporting',
+                            'Compliance: 90% (automated governance enforces every step)'
+                        ]
+                    }
+                }
+            },
+            {
+                name: 'Federated Trust Mesh',
+                subtitle: 'Teaching the system to collaborate',
+                quarter: 'Q4',
+                theme: 'Cross-Org Intelligence & Collective Defense',
+                description: 'Enabling federated learning and zero-trust architecture',
+                finalMetrics: { mttr: 8, falsePositives: 9, entropy: 0.6, compliance: 95 },
+                duration: 7000,
+                color: 'from-green-600 to-emerald-600',
+                primaryAgent: 'CRA',
+                processSteps: [
+                    { title: 'Federated Learning Setup', desc: 'Connect threat models with 5 trusted partner SOCs without sharing raw data' },
+                    { title: 'Model Aggregation', desc: 'LLM synthesizes insights from partner models to enhance collective intelligence' },
+                    { title: 'Privacy-Preserving Sharing', desc: 'Share attack patterns, IoCs, and threat signatures with differential privacy' },
+                    { title: 'Zero-Trust Enforcement', desc: 'Implement zero-trust across all inter-org communication channels' },
+                    { title: 'Compliance Verification', desc: 'Ensure all data sharing complies with PDP for all organizations' },
+                    { title: 'Collective Defense', desc: 'Threats blocked in partner network prevent attacks in our network' }
+                ],
+                agentReasonings: {
+                    ADA: {
+                        thinking: 'Contributing to collective defense...',
+                        reasoning: [
+                            'Shared with partners: "We blocked 147 attacks from IP range X.X.X.0/24 today"',
+                            'Received from partners: "These IPs are staging for attacks in region Y"',
+                            'Updated local rules: Block IP ranges based on collective intelligence',
+                            'Result: Attack stopped at perimeter using partner intelligence',
+                            'Contributing to collective defense network of 5 partners',
+                            'Combined threat visibility: 10x broader than single SOC'
+                        ]
+                    },
+                    TAA: {
+                        thinking: 'Synthesizing collective threat intelligence...',
+                        reasoning: [
+                            'Analyzing partner threat data (without raw data - privacy preserved)',
+                            'LLM synthesis: "Patterns from 5 orgs suggest coordinated campaign targeting sector Y"',
+                            'Aggregating models: Fed learning merges 5 threat prediction models',
+                            'Enhanced accuracy: 93% prediction accuracy (vs 78% single-org)',
+                            'Early warning: Detected threat stage 2 moves 3 days before our org would see them',
+                            'Collective intelligence advantage: Threats exposed across ecosystem'
+                        ]
+                    },
+                    CRA: {
+                        thinking: 'Governing federated ecosystem...',
+                        reasoning: [
+                            'Verifying: All shared data meets PDP requirements for 5+ jurisdictions',
+                            'Enforcing: Zero-trust authentication for every cross-org connection',
+                            'Monitoring: Each partner\'s data access and usage patterns',
+                            'Auditing: Complete trail of what data was shared with whom when',
+                            'Compliance check: 95%+ compliance across all partner organizations',
+                            'Trust validation: Every partner independently audited for compliance'
+                        ]
+                    }
+                }
+            }
+        ];
+
+        let currentPhaseIndex = 0;
+        let isAutoPlaying = true;
+        let currentMetrics = { mttr: 30, falsePositives: 42, entropy: 1.0, compliance: 80 };
+        let currentReasoningAgent = 'ADA';
+
+        const elements = {
+            toggleBtn: document.getElementById('toggleBtn'),
+            currentPhase: document.getElementById('currentPhase'),
+            quarterNum: document.getElementById('quarterNum'),
+            phaseName: document.getElementById('phaseName'),
+            phaseSubtitle: document.getElementById('phaseSubtitle'),
+            phaseDescription: document.getElementById('phaseDescription'),
+            phaseTheme: document.getElementById('phaseTheme'),
+            phaseContainer: document.getElementById('phaseContainer'),
+            mttr: document.getElementById('mttr'),
+            falsePos: document.getElementById('falsePos'),
+            entropy: document.getElementById('entropy'),
+            compliance: document.getElementById('compliance'),
+            mttrBar: document.getElementById('mttrBar'),
+            falsePosBar: document.getElementById('falsePosBar'),
+            entropyBar: document.getElementById('entropyBar'),
+            complianceBar: document.getElementById('complianceBar'),
+            reasoningContent: document.getElementById('reasoningContent'),
+            processFlow: document.getElementById('processFlow'),
+            phaseButtons: document.getElementById('phaseButtons'),
+            completionMessage: document.getElementById('completionMessage'),
+            progressPercent: document.getElementById('progressPercent'),
+            agentADA: document.getElementById('agentADA'),
+            agentTAA: document.getElementById('agentTAA'),
+            agentCRA: document.getElementById('agentCRA')
+        };
+
+        function updatePhaseDisplay() {
+            const phase = phases[currentPhaseIndex];
+            elements.phaseName.textContent = phase.name;
+            elements.phaseSubtitle.textContent = phase.subtitle;
+            elements.phaseDescription.textContent = phase.description;
+            elements.phaseTheme.textContent = phase.theme;
+            elements.currentPhase.textContent = currentPhaseIndex + 1;
+            elements.quarterNum.textContent = phase.quarter;
+            elements.phaseContainer.className = `rounded-xl p-6 bg-gradient-to-br ${phase.color}/10 border border-slate-600/30 phase-container relative overflow-hidden`;
+            updateProcessFlow();
+            updateAgentReasonings();
+            updatePhaseButtons();
+        }
+
+        function updateProcessFlow() {
+            const phase = phases[currentPhaseIndex];
+            elements.processFlow.innerHTML = phase.processSteps.map((step, idx) => `
+                <div class="process-step">
+                    <div class="step-number">${idx + 1}</div>
+                    <div class="step-content">
+                        <div class="step-title">${step.title}</div>
+                        <div class="step-description">${step.desc}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateAgentReasonings() {
+            const phase = phases[currentPhaseIndex];
+            const agentData = phase.agentReasonings[currentReasoningAgent];
+            
+            elements.reasoningContent.innerHTML = `
+                <div class="agent-thinking">
+                    <div class="thinking-title">
+                        <span>🤖</span>
+                        <span>${currentReasoningAgent} Agent Processing:</span>
+                    </div>
+                    <div class="thinking-content">${agentData.thinking}</div>
+                </div>
+                <div class="space-y-2">
+                    ${agentData.reasoning.map((line, idx) => `
+                        <div class="data-flow">
+                            <span class="font-semibold text-cyan-400">[${idx + 1}]</span> ${line}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            // Update agent tabs
+            document.querySelectorAll('.agent-tab').forEach(tab => {
+                if (tab.dataset.agent === currentReasoningAgent) {
+                    tab.style.background = 'rgba(59, 130, 246, 0.3)';
+                    tab.style.color = 'rgba(96, 165, 250, 1)';
+                    tab.classList.add('active');
+                    tab.setAttribute('aria-selected', 'true');
+                    tab.setAttribute('tabindex', '0');
+                } else {
+                    tab.style.background = 'transparent';
+                    tab.style.color = 'rgba(148, 163, 184, 0.7)';
+                    tab.classList.remove('active');
+                    tab.setAttribute('aria-selected', 'false');
+                    tab.setAttribute('tabindex', '-1');
+                }
+            });
+        }
+
+        function updatePhaseButtons() {
+            elements.phaseButtons.innerHTML = phases.map((p, i) => `
+                <button onclick="jumpToPhase(${i})" 
+                        class="phase-button w-full px-3 py-2 rounded text-xs text-left transition font-semibold ${
+                    currentPhaseIndex === i
+                        ? 'bg-blue-600 text-white active'
+                        : currentPhaseIndex > i
+                        ? 'bg-slate-800 text-slate-400 line-through'
+                        : 'bg-slate-900 text-slate-400 hover:bg-slate-800'
+                }"
+                        role="tab"
+                        aria-selected="${currentPhaseIndex === i}"
+                        aria-label="Phase ${i + 1}: ${p.name}"
+                        tabindex="${currentPhaseIndex === i ? 0 : -1}">
+                    ${p.quarter}: ${p.name.split(' ')[0]}
+                </button>
+            `).join('');
+        }
+
+        function animateMetrics() {
+            const phase = phases[currentPhaseIndex];
+            const startTime = Date.now();
+            const startMetrics = { ...currentMetrics };
+
+            const animate = () => {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / phase.duration, 1);
+
+                currentMetrics = {
+                    mttr: Math.round(startMetrics.mttr + (phase.finalMetrics.mttr - startMetrics.mttr) * progress),
+                    falsePositives: Math.round(startMetrics.falsePositives + (phase.finalMetrics.falsePositives - startMetrics.falsePositives) * progress),
+                    entropy: Math.round((startMetrics.entropy + (phase.finalMetrics.entropy - startMetrics.entropy) * progress) * 100) / 100,
+                    compliance: Math.round(startMetrics.compliance + (phase.finalMetrics.compliance - startMetrics.compliance) * progress)
+                };
+
+                updateMetricsDisplay();
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else if (isAutoPlaying) {
+                    currentPhaseIndex++;
+                    if (currentPhaseIndex >= phases.length) {
+                        elements.completionMessage.classList.remove('hidden');
+                    } else {
+                        updatePhaseDisplay();
+                        animateMetrics();
+                    }
+                }
+            };
+
+            requestAnimationFrame(animate);
+        }
+
+        function updateMetricsDisplay() {
+            elements.mttr.textContent = currentMetrics.mttr;
+            elements.falsePos.textContent = currentMetrics.falsePositives;
+            elements.entropy.textContent = currentMetrics.entropy;
+            elements.compliance.textContent = currentMetrics.compliance;
+
+            const mttrWidth = ((30 - currentMetrics.mttr) / 30 * 100);
+            const falsePosWidth = ((42 - currentMetrics.falsePositives) / 42 * 100);
+            const entropyWidth = ((1.0 - currentMetrics.entropy) / 1.0 * 100);
+            const complianceWidth = (currentMetrics.compliance / 100 * 100);
+
+            elements.mttrBar.style.width = mttrWidth + '%';
+            elements.mttrBar.setAttribute('aria-valuenow', currentMetrics.mttr);
+            
+            elements.falsePosBar.style.width = falsePosWidth + '%';
+            elements.falsePosBar.setAttribute('aria-valuenow', currentMetrics.falsePositives);
+            
+            elements.entropyBar.style.width = entropyWidth + '%';
+            elements.entropyBar.setAttribute('aria-valuenow', Math.round((1.0 - currentMetrics.entropy) * 100));
+            
+            elements.complianceBar.style.width = complianceWidth + '%';
+            elements.complianceBar.setAttribute('aria-valuenow', currentMetrics.compliance);
+
+            elements.progressPercent.textContent = Math.round(((currentPhaseIndex) / phases.length) * 100);
+        }
+
+        function createParticles() {
+            const container = document.getElementById('particlesContainer');
+            if (Math.random() > 0.7) {
+                const particle = document.createElement('div');
+                particle.className = 'absolute w-1 h-1 bg-cyan-400 rounded-full particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDuration = Math.random() * 1 + 1 + 's';
+                container.appendChild(particle);
+                setTimeout(() => particle.remove(), 2000);
+            }
+        }
+
+        function jumpToPhase(index) {
+            currentPhaseIndex = index;
+            isAutoPlaying = false;
+            currentReasoningAgent = phases[index].primaryAgent;
+            elements.toggleBtn.textContent = '▶ Play';
+            elements.toggleBtn.className = 'px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition';
+            updatePhaseDisplay();
+            animateMetrics();
+        }
+
+        // Event Listeners
+        elements.toggleBtn.addEventListener('click', () => {
+            isAutoPlaying = !isAutoPlaying;
+            if (isAutoPlaying) {
+                elements.toggleBtn.textContent = '⏸ Pause';
+                elements.toggleBtn.className = 'px-6 py-2 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white rounded-lg font-semibold transition shadow-lg hover:shadow-xl';
+                elements.toggleBtn.setAttribute('aria-pressed', 'true');
+                if (currentPhaseIndex >= phases.length) {
+                    currentPhaseIndex = 0;
+                    currentMetrics = { mttr: 30, falsePositives: 42, entropy: 1.0, compliance: 80 };
+                    elements.completionMessage.classList.add('hidden');
+                }
+                animateMetrics();
+            } else {
+                elements.toggleBtn.textContent = '▶ Play';
+                elements.toggleBtn.className = 'px-6 py-2 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white rounded-lg font-semibold transition shadow-lg hover:shadow-xl';
+                elements.toggleBtn.setAttribute('aria-pressed', 'false');
+            }
+        });
+
+        // Agent tab switching
+        document.querySelectorAll('.agent-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                currentReasoningAgent = tab.dataset.agent;
+                updateAgentReasonings();
+            });
+            tab.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    currentReasoningAgent = tab.dataset.agent;
+                    updateAgentReasonings();
+                }
+            });
+        });
+
+        // Keyboard navigation for phase buttons
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' && currentPhaseIndex > 0) {
+                jumpToPhase(currentPhaseIndex - 1);
+            } else if (e.key === 'ArrowRight' && currentPhaseIndex < phases.length - 1) {
+                jumpToPhase(currentPhaseIndex + 1);
+            } else if (e.key === ' ' || e.key === 'Enter') {
+                if (document.activeElement === elements.toggleBtn) {
+                    e.preventDefault();
+                    elements.toggleBtn.click();
+                }
+            }
+        });
+
+        // Voice-Over Narration Engine
+        class NarrationEngine {
+            constructor() {
+                this.isVoiceEnabled = false;
+                this.isPaused = false;
+                this.synth = window.speechSynthesis;
+                this.currentUtterance = null;
+                this.voiceOverText = '';
+                this.narrationQueue = [];
+            }
+
+            setNarration(text, priority = 'normal') {
+                const narrationEl = document.getElementById('narrationText');
+                if (narrationEl) {
+                    // Update text display
+                    narrationEl.innerHTML = `<p class="text-slate-200">${text}</p>`;
+                    narrationEl.scrollTop = narrationEl.scrollHeight;
+                    this.voiceOverText = text;
+                }
+
+                // Speak if voice is enabled
+                if (this.isVoiceEnabled && !this.isPaused) {
+                    this.speak(text);
+                }
+            }
+
+            speak(text) {
+                if (!this.synth) return;
+                
+                // Cancel any current speech
+                this.synth.cancel();
+                
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.9;
+                utterance.pitch = 1.0;
+                utterance.volume = 0.8;
+                
+                // Try to use a natural-sounding voice
+                const voices = this.synth.getVoices();
+                const preferredVoice = voices.find(v => 
+                    v.lang.includes('en') && (v.name.includes('Samantha') || v.name.includes('Alex') || v.name.includes('Daniel'))
+                ) || voices.find(v => v.lang.includes('en-US')) || voices[0];
+                
+                if (preferredVoice) {
+                    utterance.voice = preferredVoice;
+                }
+                
+                this.currentUtterance = utterance;
+                this.synth.speak(utterance);
+            }
+
+            toggleVoice() {
+                this.isVoiceEnabled = !this.isVoiceEnabled;
+                const toggleBtn = document.getElementById('narrationToggle');
+                const pauseBtn = document.getElementById('narrationPause');
+                
+                if (this.isVoiceEnabled) {
+                    toggleBtn.textContent = '🔇 Disable Voice';
+                    pauseBtn.classList.remove('hidden');
+                    if (this.voiceOverText) {
+                        this.speak(this.voiceOverText);
+                    }
+                } else {
+                    toggleBtn.textContent = '🔊 Enable Voice';
+                    pauseBtn.classList.add('hidden');
+                    this.synth.cancel();
+                }
+            }
+
+            pause() {
+                if (this.synth.speaking) {
+                    this.synth.pause();
+                    this.isPaused = true;
+                } else if (this.synth.paused) {
+                    this.synth.resume();
+                    this.isPaused = false;
+                }
+            }
+
+            stop() {
+                this.synth.cancel();
+                this.isPaused = false;
+            }
+        }
+
+        const narrationEngine = new NarrationEngine();
+
+        class ParentOrchestrator {
+            constructor(ui){
+                this.ui = ui;
+                this.narration = narrationEngine;
+                this.scenarios = [
+                    {
+                        threat: 'Lateral Movement Attack',
+                        description: 'Unauthorized access detected: Attacker moving from web server to database',
+                        source: 'web-prod-01',
+                        target: 'db-prod-02',
+                        severity: 'high',
+                        adaDetect: 'Multiple failed auth attempts followed by successful connection',
+                        taaPredict: 'Attacker will attempt data exfiltration within 5 minutes',
+                        actions: [
+                            { name: 'Isolate Network Segment', desc: 'Block all traffic from web-prod-01 subnet', icon: '🔥' },
+                            { name: 'Revoke Credentials', desc: 'Disable compromised user accounts', icon: '🔐' },
+                            { name: 'Kill Malicious Process', desc: 'Terminate suspicious process on db-prod-02', icon: '🖥️' }
+                        ]
+                    },
+                    {
+                        threat: 'Data Exfiltration Attempt',
+                        description: 'Large data transfer detected: 2.5GB sent to external IP',
+                        source: 'api-server-03',
+                        target: 'external:185.220.101.x',
+                        severity: 'critical',
+                        adaDetect: 'Unusual outbound data volume (250x normal baseline)',
+                        taaPredict: 'Attacker will complete exfiltration in 3 minutes',
+                        actions: [
+                            { name: 'Block External IP', desc: 'Firewall rule blocks 185.220.101.x', icon: '🚫' },
+                            { name: 'Isolate Endpoint', desc: 'Disconnect api-server-03 from network', icon: '🔌' },
+                            { name: 'Preserve Evidence', desc: 'Create forensic snapshot for investigation', icon: '📸' }
+                        ]
+                    },
+                    {
+                        threat: 'Privilege Escalation',
+                        description: 'Service account attempting admin-level access',
+                        source: 'svc-account:app-backend',
+                        target: 'admin-endpoints',
+                        severity: 'high',
+                        adaDetect: 'Service account requesting admin API tokens',
+                        taaPredict: 'Attacker will gain full system access in 8 minutes',
+                        actions: [
+                            { name: 'Revoke Service Account', desc: 'Disable svc-account:app-backend immediately', icon: '🔐' },
+                            { name: 'Reset Admin Credentials', desc: 'Force password reset for all admin accounts', icon: '🔄' },
+                            { name: 'Review Access Logs', desc: 'Analyze all admin-endpoint access attempts', icon: '📋' }
+                        ]
+                    }
+                ];
+            }
+            
+            sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+            
+            log(message, level='info', icon=''){
+                const el = document.createElement('div');
+                el.className = 'log-entry';
+                const ts = new Date().toLocaleTimeString();
+                let color = 'text-slate-300';
+                let bgColor = '';
+                if (level === 'error') {
+                    color = 'text-red-400';
+                    bgColor = 'bg-red-900/20';
+                } else if (level === 'warn') {
+                    color = 'text-yellow-400';
+                    bgColor = 'bg-yellow-900/20';
+                } else if (level === 'success') {
+                    color = 'text-green-400';
+                    bgColor = 'bg-green-900/20';
+                }
+                const iconHtml = icon ? `<span class="mr-1">${icon}</span>` : '';
+                el.className = `log-entry ${bgColor} px-2 py-1 rounded`;
+                el.innerHTML = `<span class="text-slate-500 text-xs">[${ts}]</span> <span class="${color}">${iconHtml}${message}</span>`;
+                this.ui.log.appendChild(el);
+                this.ui.log.scrollTop = this.ui.log.scrollHeight;
+            }
+            
+            setStep(id, text, status='active'){
+                const target = this.ui[id];
+                if (target) {
+                    target.textContent = text;
+                    const card = target.closest('.bg-slate-900');
+                    if (card) {
+                        card.classList.remove('border-blue-500', 'border-purple-500', 'border-green-500', 'border-green-600');
+                        if (status === 'active') {
+                            if (id === 'shiStepDetect') card.classList.add('border-blue-500');
+                            else if (id === 'shiStepDecide') card.classList.add('border-purple-500');
+                            else if (id === 'shiStepRemediate') card.classList.add('border-green-500');
+                        } else if (status === 'completed') {
+                            card.classList.add('border-green-600');
+                        }
+                    }
+                }
+            }
+            
+            setStatus(text, color='slate'){
+                this.ui.status.textContent = text;
+                const colors = {
+                    'slate': 'bg-slate-800 text-slate-400',
+                    'blue': 'bg-blue-900/50 text-blue-300',
+                    'green': 'bg-green-900/50 text-green-300',
+                    'red': 'bg-red-900/50 text-red-300'
+                };
+                this.ui.status.className = `text-xs px-2 py-1 rounded ${colors[color] || colors.slate}`;
+            }
+            
+            showThreatCard(scenario){
+                const card = document.getElementById('shiThreatCard');
+                const title = document.getElementById('shiThreatTitle');
+                const desc = document.getElementById('shiThreatDesc');
+                title.textContent = scenario.threat;
+                desc.textContent = scenario.description;
+                card.classList.remove('hidden');
+            }
+            
+            hideResults(){
+                document.getElementById('shiResults').classList.add('hidden');
+            }
+            
+            showResults(actions){
+                const resultsDiv = document.getElementById('shiResults');
+                const resultsList = document.getElementById('shiResultsList');
+                resultsList.innerHTML = actions.map(a => 
+                    `<div class="flex items-center gap-2"><span>${a.icon}</span><span>${a.name}</span></div>`
+                ).join('');
+                resultsDiv.classList.remove('hidden');
+            }
+            
+            async runScenario(){
+                try{
+                    // Reset UI
+                    this.ui.log.innerHTML = '';
+                    this.hideResults();
+                    document.getElementById('shiThreatCard').classList.add('hidden');
+                    this.setStatus('Analyzing...', 'blue');
+                    
+                    // Initial narration
+                    this.narration.setNarration(
+                        "Welcome to the Live Threat Response demonstration. This system showcases how our Digital Twin AI-Driven SOC autonomously protects your infrastructure. " +
+                        "You're about to witness a simulated security threat and see how three intelligent agents work together to detect, predict, and respond in real-time. " +
+                        "The entire process happens automatically, demonstrating the power of autonomous cybersecurity."
+                    );
+                    await this.sleep(2000);
+                    
+                    // Select random scenario
+                    const scenario = this.scenarios[Math.floor(Math.random() * this.scenarios.length)];
+                    this.showThreatCard(scenario);
+                    
+                    // Step 1: ADA Detection
+                    this.narration.setNarration(
+                        `A security threat has been detected: ${scenario.threat}. ` +
+                        `The Adaptive Defense Agent, or ADA, is now scanning network traffic and system logs in real-time. ` +
+                        `ADA processes over 50 million security events daily using advanced machine learning models trained on historical attack patterns. ` +
+                        `It's analyzing anomalies and correlating indicators to identify malicious activity.`
+                    );
+                    this.setStep('shiStepDetect', 'Analyzing...', 'active');
+                    this.log('🛡️ ADA: Scanning network traffic and system logs...', 'info');
+                    await this.sleep(800);
+                    
+                    this.narration.setNarration(
+                        `ADA has detected suspicious activity: ${scenario.adaDetect}. ` +
+                        `The threat originates from ${scenario.source} and is targeting ${scenario.target}. ` +
+                        `This is a ${scenario.severity} severity incident that requires immediate attention. ` +
+                        `ADA's detection accuracy is 99.2 percent, meaning it correctly identifies real threats while minimizing false alarms.`
+                    );
+                    this.log(`🔍 Detected: ${scenario.adaDetect}`, 'warn');
+                    this.setStep('shiStepDetect', scenario.threat, 'completed');
+                    this.log(`📍 Source: ${scenario.source} → Target: ${scenario.target}`, 'info');
+                    await this.sleep(1500);
+                    
+                    // Step 2: TAA Prediction
+                    this.narration.setNarration(
+                        `Now, the Threat Analysis Agent, or TAA, takes over. TAA uses large language models and graph neural networks to predict what the attacker will do next. ` +
+                        `It analyzes the attack pattern, maps it against the MITRE ATT&CK framework, and forecasts the attacker's likely next moves. ` +
+                        `This predictive capability gives us a crucial time advantage to prepare defensive responses before damage occurs.`
+                    );
+                    this.setStep('shiStepDecide', 'Predicting...', 'active');
+                    this.log('🧠 TAA: Analyzing attack pattern and predicting next moves...', 'info');
+                    await this.sleep(1000);
+                    
+                    this.narration.setNarration(
+                        `TAA's prediction: ${scenario.taaPredict}. ` +
+                        `Based on this forecast, the system has developed a response plan with ${scenario.actions.length} containment actions. ` +
+                        `TAA's prediction accuracy of 94.2 percent helps us anticipate attacks and respond proactively rather than reactively. ` +
+                        `The system is now preparing to execute these defensive measures autonomously.`
+                    );
+                    this.log(`🔮 Prediction: ${scenario.taaPredict}`, 'warn');
+                    this.setStep('shiStepDecide', `${scenario.actions.length} actions planned`, 'completed');
+                    await this.sleep(1500);
+                    
+                    // Step 3: CRA Validation
+                    this.narration.setNarration(
+                        `Before executing any response, the Compliance and Risk Agent, or CRA, validates that all planned actions comply with regulatory requirements. ` +
+                        `CRA checks against data protection regulations like PDP, GDPR, and HIPAA to ensure our response doesn't violate privacy laws or data residency requirements. ` +
+                        `This governance layer ensures that security responses are both effective and compliant.`
+                    );
+                    this.setStep('shiStepRemediate', 'Validating...', 'active');
+                    this.log('✓ CRA: Checking compliance rules (PDP, GDPR)...', 'info');
+                    await this.sleep(600);
+                    
+                    this.narration.setNarration(
+                        `CRA has approved all response actions. Every action in our plan complies with regulatory requirements and organizational policies. ` +
+                        `With a compliance score of 95.8 percent, CRA ensures that our autonomous responses maintain the highest standards of governance and accountability. ` +
+                        `The system is now cleared to execute the containment plan.`
+                    );
+                    this.log('✅ CRA: All actions comply with regulations', 'success');
+                    this.setStep('shiStepRemediate', 'Approved', 'completed');
+                    await this.sleep(1500);
+                    
+                    // Step 4: Execute Actions
+                    this.narration.setNarration(
+                        `The autonomous response system is now executing the containment plan. ` +
+                        `Through SOAR integration, the system automatically orchestrates defensive actions across multiple security tools including firewalls, endpoint detection systems, and identity management platforms. ` +
+                        `Each action is executed in sequence, with real-time verification to ensure effectiveness.`
+                    );
+                    this.log('⚙️ Executing autonomous response plan...', 'info');
+                    await this.sleep(300);
+                    
+                    for (let i = 0; i < scenario.actions.length; i++) {
+                        const action = scenario.actions[i];
+                        
+                        this.narration.setNarration(
+                            `Executing action ${i + 1} of ${scenario.actions.length}: ${action.name}. ` +
+                            `${action.desc}. ` +
+                            `This action is part of the autonomous response workflow, executed without human intervention. ` +
+                            `The system continuously monitors the effectiveness of each action and adjusts the response plan as needed.`
+                        );
+                        this.log(`${action.icon} Executing: ${action.name}`, 'info');
+                        await this.sleep(700);
+                        this.log(`   → ${action.desc}`, 'info');
+                        await this.sleep(500);
+                        this.log(`   ✓ ${action.name} completed successfully`, 'success');
+                        await this.sleep(800);
+                    }
+                    
+                    // Success
+                    this.narration.setNarration(
+                        `Threat containment complete. All ${scenario.actions.length} defensive actions have been executed successfully. ` +
+                        `The threat has been neutralized, and the system is now secure. ` +
+                        `This entire process, from detection to containment, completed in under 10 minutes - a 73 percent improvement over traditional manual response times. ` +
+                        `The autonomous system has logged all actions for forensic analysis and compliance reporting. ` +
+                        `This demonstrates how Digital Twin AI-Driven SOC enables faster, more effective cybersecurity responses while maintaining full compliance and accountability.`
+                    );
+                    this.setStatus('Threat Contained', 'green');
+                    this.log('🎉 All containment actions completed successfully', 'success');
+                    this.log('🔒 System is now secure', 'success');
+                    this.showResults(scenario.actions);
+                    
+                } catch(err) {
+                    this.narration.setNarration(
+                        `An error occurred during threat response: ${err.message}. ` +
+                        `The system is automatically initiating a rollback procedure to restore the environment to a safe state. ` +
+                        `All automated actions are reversible, ensuring that any errors can be quickly mitigated.`
+                    );
+                    this.setStatus('Error', 'red');
+                    this.log(`❌ Error: ${err.message}`, 'error');
+                    this.log('🔄 Initiating rollback procedure...', 'warn');
+                    await this.sleep(500);
+                    this.log('✅ Rollback completed - system restored to safe state', 'success');
+                }
+            }
+        }
+
+        const orchestrator = new ParentOrchestrator({
+            log: document.getElementById('shiLog'),
+            status: document.getElementById('shiStatus'),
+            detect: document.getElementById('shiStepDetect'),
+            decide: document.getElementById('shiStepDecide'),
+            remediate: document.getElementById('shiStepRemediate')
+        });
+
+        document.getElementById('shiBtn')?.addEventListener('click', ()=> {
+            narrationEngine.stop();
+            orchestrator.runScenario();
+        });
+
+        // Narration controls
+        document.getElementById('narrationToggle')?.addEventListener('click', () => {
+            narrationEngine.toggleVoice();
+        });
+
+        document.getElementById('narrationPause')?.addEventListener('click', () => {
+            narrationEngine.pause();
+            const pauseBtn = document.getElementById('narrationPause');
+            if (narrationEngine.isPaused) {
+                pauseBtn.textContent = '▶️ Resume';
+            } else {
+                pauseBtn.textContent = '⏸️ Pause';
+            }
+        });
+
+        // Initialize voices when available
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = () => {
+                // Voices are now loaded
+            };
+        }
+
+        // Investor Demo logic
+        const investorSlides = [
+            {
+                title: 'The Problem: Inefficient Security Operations',
+                subtitle: 'High costs, slow response, overwhelmed teams',
+                points: [
+                    '30 min average response time leads to higher risk',
+                    '42% of alerts are false positives (wasted effort)',
+                    'Breaches cost $4.45M on average'
+                ]
+            },
+            {
+                title: 'The Solution: Digital Twin AI-Driven SOC',
+                subtitle: 'Predictive, autonomous, compliant by design',
+                points: [
+                    'AI learns from 10,000+ safe simulations (no prod risk)',
+                    'Three agents: Detect (ADA), Predict (TAA), Comply (CRA)',
+                    'Automated runbooks execute in minutes'
+                ]
+            },
+            {
+                title: 'The Outcomes: Faster, Cheaper, Safer',
+                subtitle: 'Time-to-value in weeks, measurable ROI',
+                points: [
+                    '73% faster response (30 min → 8.3 min)',
+                    '79% fewer false positives (focus on real threats)',
+                    '12-week implementation with compounding benefits'
+                ]
+            }
+        ];
+
+        let investorIndex = 0;
+        function renderInvestorSlide(){
+            const s = investorSlides[investorIndex];
+            document.getElementById('investorSlideTitle').textContent = s.title;
+            document.getElementById('investorSlideSubtitle').textContent = s.subtitle;
+            const ul = document.getElementById('investorSlidePoints');
+            ul.innerHTML = '';
+            s.points.forEach(p=>{
+                const li = document.createElement('li');
+                li.textContent = p;
+                ul.appendChild(li);
+            });
+            document.getElementById('investorStep').textContent = investorIndex + 1;
+            document.getElementById('investorTotal').textContent = investorSlides.length;
+        }
+
+        function openInvestor(){
+            document.getElementById('investorOverlay').classList.remove('hidden');
+            investorIndex = 0; renderInvestorSlide();
+        }
+        function closeInvestor(){
+            document.getElementById('investorOverlay').classList.add('hidden');
+        }
+        document.getElementById('investorBtn')?.addEventListener('click', openInvestor);
+        document.getElementById('investorClose')?.addEventListener('click', closeInvestor);
+        document.getElementById('investorPrev')?.addEventListener('click', ()=>{ investorIndex = Math.max(0, investorIndex-1); renderInvestorSlide(); });
+        document.getElementById('investorNext')?.addEventListener('click', ()=>{ investorIndex = Math.min(investorSlides.length-1, investorIndex+1); renderInvestorSlide(); });
+
+        // Initialize
+        updatePhaseDisplay();
+        setInterval(createParticles, 200);
+
+        // Start
+        animateMetrics();
+    </script>
+</body>
+</html>
