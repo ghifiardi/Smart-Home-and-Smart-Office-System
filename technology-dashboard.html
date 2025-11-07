@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Technology Dashboard - Digital Twin AI-Driven SOC Technology Stack">
+    <title>Technology Dashboard - Digital Twin AI-Driven SOC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            background-attachment: fixed;
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+
+        .tech-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .tech-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .service-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: rgba(96, 165, 250, 1);
+            transition: all 0.2s ease;
+        }
+
+        .service-badge:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+
+        .phase-tech {
+            border-left: 4px solid;
+            padding-left: 16px;
+            margin-bottom: 20px;
+        }
+
+        .architecture-flow {
+            position: relative;
+            padding: 20px;
+        }
+
+        .flow-arrow {
+            position: absolute;
+            width: 2px;
+            height: 30px;
+            background: linear-gradient(180deg, rgba(59, 130, 246, 0.5), transparent);
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .tech-stack-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 8px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            margin-bottom: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .tech-stack-item:hover {
+            background: rgba(15, 23, 42, 0.7);
+            border-color: rgba(59, 130, 246, 0.4);
+            transform: translateX(4px);
+        }
+
+        .scroll-container {
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .scroll-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .scroll-container::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.3);
+            border-radius: 3px;
+        }
+
+        .scroll-container::-webkit-scrollbar-thumb {
+            background: rgba(59, 130, 246, 0.3);
+            border-radius: 3px;
+        }
+
+        .scroll-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(59, 130, 246, 0.5);
+        }
+
+        .metric-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 4px;
+            font-size: 0.7rem;
+            color: rgba(134, 239, 172, 1);
+        }
+
+        .tab-button {
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .tab-button.active {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+
+        .tab-button.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: rgba(59, 130, 246, 1);
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="w-full min-h-screen">
+        <!-- Header -->
+        <header class="bg-gradient-to-b from-slate-900 to-transparent p-6 border-b border-slate-700/30 sticky top-0 z-20 backdrop-blur-sm">
+            <div class="max-w-7xl mx-auto">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h1 class="text-3xl font-bold text-white mb-2">Technology Dashboard</h1>
+                        <p class="text-slate-400">Digital Twin AI-Driven SOC - Technology Stack & Architecture</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <a href="index.html" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-semibold transition">
+                            ← Transformation View
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto p-6 space-y-6">
+            <!-- Technology Stack Overview -->
+            <section class="tech-card rounded-xl bg-gradient-to-br from-blue-600/10 to-cyan-600/10 border border-slate-600/30 p-6">
+                <h2 class="text-2xl font-bold text-white mb-4">Technology Stack</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-2xl">☁️</span>
+                            <h3 class="font-semibold text-white">Cloud Platform</h3>
+                        </div>
+                        <p class="text-sm text-slate-400 mb-3">Google Cloud Platform</p>
+                        <div class="space-y-2">
+                            <div class="service-badge">BigQuery</div>
+                            <div class="service-badge">Vertex AI</div>
+                            <div class="service-badge">Cloud Functions</div>
+                            <div class="service-badge">Dataflow</div>
+                            <div class="service-badge">Cloud Run</div>
+                            <div class="service-badge">Chronicle SIEM</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-2xl">🤖</span>
+                            <h3 class="font-semibold text-white">AI/ML Technologies</h3>
+                        </div>
+                        <p class="text-sm text-slate-400 mb-3">Advanced AI Capabilities</p>
+                        <div class="space-y-2">
+                            <div class="service-badge">Reinforcement Learning</div>
+                            <div class="service-badge">Large Language Models</div>
+                            <div class="service-badge">Federated Learning</div>
+                            <div class="service-badge">Causal Reasoning</div>
+                            <div class="service-badge">Time-Series ML</div>
+                            <div class="service-badge">Graph Neural Networks</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-2xl">🔧</span>
+                            <h3 class="font-semibold text-white">Integration & Orchestration</h3>
+                        </div>
+                        <p class="text-sm text-slate-400 mb-3">SOAR & Automation</p>
+                        <div class="space-y-2">
+                            <div class="service-badge">SOAR Platforms</div>
+                            <div class="service-badge">REST APIs</div>
+                            <div class="service-badge">Webhooks</div>
+                            <div class="service-badge">Playbooks</div>
+                            <div class="service-badge">Event Bus</div>
+                            <div class="service-badge">Consensus Engine</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Architecture Diagram -->
+            <section class="tech-card rounded-xl bg-slate-950 border border-slate-700 p-6">
+                <h2 class="text-2xl font-bold text-white mb-4">System Architecture</h2>
+                
+                <!-- Tabs -->
+                <div class="flex gap-2 mb-6 border-b border-slate-700">
+                    <button class="tab-button active px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-blue-400" data-tab="overview">
+                        Overview
+                    </button>
+                    <button class="tab-button px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-white" data-tab="phase2">
+                        Phase 2 (Digital Twin)
+                    </button>
+                    <button class="tab-button px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-white" data-tab="phase3">
+                        Phase 3 (Production)
+                    </button>
+                    <button class="tab-button px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-white" data-tab="agents">
+                        AI Agents
+                    </button>
+                </div>
+
+                <!-- Tab Content -->
+                <div id="tabContent" class="scroll-container max-h-96">
+                    <!-- Overview Tab -->
+                    <div id="overview" class="tab-content">
+                        <div class="architecture-flow">
+                            <div class="bg-slate-900/50 rounded-lg p-4 border border-slate-700 mb-4">
+                                <h3 class="font-semibold text-white mb-2">Data Layer</h3>
+                                <div class="space-y-2">
+                                    <div class="tech-stack-item">
+                                        <span class="text-blue-400">📊</span>
+                                        <div>
+                                            <div class="text-sm font-semibold text-white">Chronicle SIEM</div>
+                                            <div class="text-xs text-slate-400">50M+ events/day, real-time ingestion</div>
+                                        </div>
+                                    </div>
+                                    <div class="tech-stack-item">
+                                        <span class="text-blue-400">💾</span>
+                                        <div>
+                                            <div class="text-sm font-semibold text-white">BigQuery Data Lake</div>
+                                            <div class="text-xs text-slate-400">Petabyte-scale, 6 months historical data</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flow-arrow"></div>
+                            <div class="bg-slate-900/50 rounded-lg p-4 border border-slate-700 mb-4">
+                                <h3 class="font-semibold text-white mb-2">AI Layer</h3>
+                                <div class="space-y-2">
+                                    <div class="tech-stack-item">
+                                        <span class="text-purple-400">🛡️</span>
+                                        <div>
+                                            <div class="text-sm font-semibold text-white">ADA - Adaptive Defense Agent</div>
+                                            <div class="text-xs text-slate-400">Real-time threat detection, 99.2% accuracy</div>
+                                        </div>
+                                    </div>
+                                    <div class="tech-stack-item">
+                                        <span class="text-purple-400">🧠</span>
+                                        <div>
+                                            <div class="text-sm font-semibold text-white">TAA - Threat Analysis Agent</div>
+                                            <div class="text-xs text-slate-400">LLM-powered prediction, 94.2% accuracy</div>
+                                        </div>
+                                    </div>
+                                    <div class="tech-stack-item">
+                                        <span class="text-purple-400">✓</span>
+                                        <div>
+                                            <div class="text-sm font-semibold text-white">CRA - Compliance Agent</div>
+                                            <div class="text-xs text-slate-400">Automated governance, 95.8% compliance</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flow-arrow"></div>
+                            <div class="bg-slate-900/50 rounded-lg p-4 border border-slate-700 mb-4">
+                                <h3 class="font-semibold text-white mb-2">Orchestration Layer</h3>
+                                <div class="space-y-2">
+                                    <div class="tech-stack-item">
+                                        <span class="text-green-400">⚙️</span>
+                                        <div>
+                                            <div class="text-sm font-semibold text-white">Autonomous Orchestrator</div>
+                                            <div class="text-xs text-slate-400">Event bus, consensus engine, workflow management</div>
+                                        </div>
+                                    </div>
+                                    <div class="tech-stack-item">
+                                        <span class="text-green-400">🔗</span>
+                                        <div>
+                                            <div class="text-sm font-semibold text-white">SOAR Integration</div>
+                                            <div class="text-xs text-slate-400">Playbook execution, action orchestration</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flow-arrow"></div>
+                            <div class="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+                                <h3 class="font-semibold text-white mb-2">Execution Layer</h3>
+                                <div class="space-y-2">
+                                    <div class="tech-stack-item">
+                                        <span class="text-orange-400">🔥</span>
+                                        <div>
+                                            <div class="text-sm font-semibold text-white">Firewall APIs</div>
+                                            <div class="text-xs text-slate-400">Network isolation, IP blocking</div>
+                                        </div>
+                                    </div>
+                                    <div class="tech-stack-item">
+                                        <span class="text-orange-400">🖥️</span>
+                                        <div>
+                                            <div class="text-sm font-semibold text-white">EDR Systems</div>
+                                            <div class="text-xs text-slate-400">Endpoint containment, process termination</div>
+                                        </div>
+                                    </div>
+                                    <div class="tech-stack-item">
+                                        <span class="text-orange-400">🔐</span>
+                                        <div>
+                                            <div class="text-sm font-semibold text-white">IAM Systems</div>
+                                            <div class="text-xs text-slate-400">Credential revocation, access control</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Phase 2 Tab -->
+                    <div id="phase2" class="tab-content hidden">
+                        <div class="space-y-4">
+                            <div class="bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-lg p-4 border border-purple-600/30">
+                                <h3 class="font-semibold text-white mb-3">Phase 2: Digital Twin Architecture</h3>
+                                <p class="text-sm text-slate-300 mb-4">Isolated environment for safe attack simulation and model training</p>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="bg-slate-900/50 rounded p-3">
+                                        <h4 class="text-sm font-semibold text-purple-300 mb-2">Data Snapshot</h4>
+                                        <ul class="text-xs text-slate-400 space-y-1">
+                                            <li>• Production BigQuery → Digital Twin BigQuery</li>
+                                            <li>• Isolated dataset (monthly snapshots)</li>
+                                            <li>• Cost: ~$50/month storage</li>
+                                            <li>• Time: 30 minutes per snapshot</li>
+                                        </ul>
+                                    </div>
+                                    <div class="bg-slate-900/50 rounded p-3">
+                                        <h4 class="text-sm font-semibold text-purple-300 mb-2">Simulation Engine</h4>
+                                        <ul class="text-xs text-slate-400 space-y-1">
+                                            <li>• 10,000+ attack scenarios</li>
+                                            <li>• MITRE ATT&CK framework</li>
+                                            <li>• Cost: ~$500/month compute</li>
+                                            <li>• Time: 4-6 hours for all scenarios</li>
+                                        </ul>
+                                    </div>
+                                    <div class="bg-slate-900/50 rounded p-3">
+                                        <h4 class="text-sm font-semibold text-purple-300 mb-2">Model Training</h4>
+                                        <ul class="text-xs text-slate-400 space-y-1">
+                                            <li>• Vertex AI for RL training</li>
+                                            <li>• 1M+ scenario iterations</li>
+                                            <li>• Cost: ~$200/month</li>
+                                            <li>• Result: 99.2% accuracy</li>
+                                        </ul>
+                                    </div>
+                                    <div class="bg-slate-900/50 rounded p-3">
+                                        <h4 class="text-sm font-semibold text-purple-300 mb-2">Technology Stack</h4>
+                                        <ul class="text-xs text-slate-400 space-y-1">
+                                            <li>• Cloud Functions (serverless)</li>
+                                            <li>• Dataflow (ETL pipeline)</li>
+                                            <li>• BigQuery (data warehouse)</li>
+                                            <li>• Vertex AI (ML training)</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Phase 3 Tab -->
+                    <div id="phase3" class="tab-content hidden">
+                        <div class="space-y-4">
+                            <div class="bg-gradient-to-r from-orange-600/20 to-red-600/20 rounded-lg p-4 border border-orange-600/30">
+                                <h3 class="font-semibold text-white mb-3">Phase 3: Production Architecture</h3>
+                                <p class="text-sm text-slate-300 mb-4">Real-time autonomous response with SOAR integration</p>
+                                
+                                <div class="space-y-4">
+                                    <div class="bg-slate-900/50 rounded p-4">
+                                        <h4 class="text-sm font-semibold text-orange-300 mb-3">Detection Pipeline</h4>
+                                        <div class="space-y-2">
+                                            <div class="tech-stack-item">
+                                                <span class="text-orange-400">📡</span>
+                                                <div>
+                                                    <div class="text-sm font-semibold text-white">Chronicle SIEM</div>
+                                                    <div class="text-xs text-slate-400">Real-time event streaming, 50M events/day</div>
+                                                </div>
+                                            </div>
+                                            <div class="tech-stack-item">
+                                                <span class="text-orange-400">🤖</span>
+                                                <div>
+                                                    <div class="text-sm font-semibold text-white">ADA Detection</div>
+                                                    <div class="text-xs text-slate-400">ML model inference, 0.5 sec detection time</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-slate-900/50 rounded p-4">
+                                        <h4 class="text-sm font-semibold text-orange-300 mb-3">Prediction & Decision</h4>
+                                        <div class="space-y-2">
+                                            <div class="tech-stack-item">
+                                                <span class="text-orange-400">🧠</span>
+                                                <div>
+                                                    <div class="text-sm font-semibold text-white">TAA Prediction</div>
+                                                    <div class="text-xs text-slate-400">LLM-powered, 1.2 sec prediction time</div>
+                                                </div>
+                                            </div>
+                                            <div class="tech-stack-item">
+                                                <span class="text-orange-400">🎯</span>
+                                                <div>
+                                                    <div class="text-sm font-semibold text-white">RL Agent Decision</div>
+                                                    <div class="text-xs text-slate-400">Optimal response selection, 0.9 sec</div>
+                                                </div>
+                                            </div>
+                                            <div class="tech-stack-item">
+                                                <span class="text-orange-400">✓</span>
+                                                <div>
+                                                    <div class="text-sm font-semibold text-white">CRA Validation</div>
+                                                    <div class="text-xs text-slate-400">Compliance check, &lt;100ms</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-slate-900/50 rounded p-4">
+                                        <h4 class="text-sm font-semibold text-orange-300 mb-3">SOAR Integration</h4>
+                                        <div class="space-y-2">
+                                            <div class="tech-stack-item">
+                                                <span class="text-orange-400">🔗</span>
+                                                <div>
+                                                    <div class="text-sm font-semibold text-white">Webhook Receiver</div>
+                                                    <div class="text-xs text-slate-400">REST API endpoint for threat data</div>
+                                                </div>
+                                            </div>
+                                            <div class="tech-stack-item">
+                                                <span class="text-orange-400">📋</span>
+                                                <div>
+                                                    <div class="text-sm font-semibold text-white">Playbook Execution</div>
+                                                    <div class="text-xs text-slate-400">Automated runbooks (50+ actions)</div>
+                                                </div>
+                                            </div>
+                                            <div class="tech-stack-item">
+                                                <span class="text-orange-400">⚡</span>
+                                                <div>
+                                                    <div class="text-sm font-semibold text-white">Action Execution</div>
+                                                    <div class="text-xs text-slate-400">Firewall, EDR, IAM integration</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Agents Tab -->
+                    <div id="agents" class="tab-content hidden">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 rounded-lg p-4 border border-blue-600/30">
+                                <div class="flex items-center gap-2 mb-3">
+                                    <span class="text-2xl">🛡️</span>
+                                    <h3 class="font-semibold text-white">ADA</h3>
+                                </div>
+                                <p class="text-xs text-slate-300 mb-3">Adaptive Defense Agent</p>
+                                <div class="space-y-2">
+                                    <div class="bg-slate-900/50 rounded p-2">
+                                        <div class="text-xs font-semibold text-blue-300 mb-1">Technology</div>
+                                        <ul class="text-xs text-slate-400 space-y-1">
+                                            <li>• ML Models (BigQuery ML)</li>
+                                            <li>• Real-time event processing</li>
+                                            <li>• Correlation engine</li>
+                                            <li>• 99.2% detection accuracy</li>
+                                        </ul>
+                                    </div>
+                                    <div class="bg-slate-900/50 rounded p-2">
+                                        <div class="text-xs font-semibold text-blue-300 mb-1">Capabilities</div>
+                                        <ul class="text-xs text-slate-400 space-y-1">
+                                            <li>• 50M+ events/day processing</li>
+                                            <li>• Sub-second detection</li>
+                                            <li>• Autonomous response</li>
+                                            <li>• Continuous learning</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-gradient-to-br from-purple-600/20 to-pink-600/20 rounded-lg p-4 border border-purple-600/30">
+                                <div class="flex items-center gap-2 mb-3">
+                                    <span class="text-2xl">🧠</span>
+                                    <h3 class="font-semibold text-white">TAA</h3>
+                                </div>
+                                <p class="text-xs text-slate-300 mb-3">Threat Analysis Agent</p>
+                                <div class="space-y-2">
+                                    <div class="bg-slate-900/50 rounded p-2">
+                                        <div class="text-xs font-semibold text-purple-300 mb-1">Technology</div>
+                                        <ul class="text-xs text-slate-400 space-y-1">
+                                            <li>• Large Language Models</li>
+                                            <li>• Graph Neural Networks</li>
+                                            <li>• Causal reasoning engine</li>
+                                            <li>• 94.2% prediction accuracy</li>
+                                        </ul>
+                                    </div>
+                                    <div class="bg-slate-900/50 rounded p-2">
+                                        <div class="text-xs font-semibold text-purple-300 mb-1">Capabilities</div>
+                                        <ul class="text-xs text-slate-400 space-y-1">
+                                            <li>• Attack chain analysis</li>
+                                            <li>• Next-stage prediction</li>
+                                            <li>• Threat timeline modeling</li>
+                                            <li>• Federated learning</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-gradient-to-br from-green-600/20 to-emerald-600/20 rounded-lg p-4 border border-green-600/30">
+                                <div class="flex items-center gap-2 mb-3">
+                                    <span class="text-2xl">✓</span>
+                                    <h3 class="font-semibold text-white">CRA</h3>
+                                </div>
+                                <p class="text-xs text-slate-300 mb-3">Compliance Agent</p>
+                                <div class="space-y-2">
+                                    <div class="bg-slate-900/50 rounded p-2">
+                                        <div class="text-xs font-semibold text-green-300 mb-1">Technology</div>
+                                        <ul class="text-xs text-slate-400 space-y-1">
+                                            <li>• Rule engine</li>
+                                            <li>• Audit logging</li>
+                                            <li>• Compliance templates</li>
+                                            <li>• 95.8% compliance score</li>
+                                        </ul>
+                                    </div>
+                                    <div class="bg-slate-900/50 rounded p-2">
+                                        <div class="text-xs font-semibold text-green-300 mb-1">Capabilities</div>
+                                        <ul class="text-xs text-slate-400 space-y-1">
+                                            <li>• Real-time validation</li>
+                                            <li>• PDP/GDPR/HIPAA</li>
+                                            <li>• Automated reporting</li>
+                                            <li>• Zero-trust enforcement</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Implementation Phases -->
+            <section class="tech-card rounded-xl bg-slate-950 border border-slate-700 p-6">
+                <h2 class="text-2xl font-bold text-white mb-4">Implementation Phases & Technology</h2>
+                <div class="space-y-6">
+                    <!-- Phase 1 -->
+                    <div class="phase-tech border-blue-500">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="text-xl font-bold text-blue-400">Q1</span>
+                            <h3 class="text-xl font-semibold text-white">Cognitive Telemetry</h3>
+                        </div>
+                        <p class="text-sm text-slate-400 mb-4">Teaching the system to see</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-slate-900/50 rounded p-3">
+                                <h4 class="text-sm font-semibold text-blue-300 mb-2">Technologies</h4>
+                                <ul class="text-xs text-slate-400 space-y-1">
+                                    <li>• Chronicle SIEM integration</li>
+                                    <li>• BigQuery data lake setup</li>
+                                    <li>• ML model training (6 months data)</li>
+                                    <li>• Alert correlation engine</li>
+                                </ul>
+                            </div>
+                            <div class="bg-slate-900/50 rounded p-3">
+                                <h4 class="text-sm font-semibold text-blue-300 mb-2">Results</h4>
+                                <ul class="text-xs text-slate-400 space-y-1">
+                                    <li>• 90% alert correlation accuracy</li>
+                                    <li>• 42% → 15% false positives</li>
+                                    <li>• 50M+ events/day processing</li>
+                                    <li>• Real-time data ingestion</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Phase 2 -->
+                    <div class="phase-tech border-purple-500">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="text-xl font-bold text-purple-400">Q2</span>
+                            <h3 class="text-xl font-semibold text-white">Predictive Twin Fabric</h3>
+                        </div>
+                        <p class="text-sm text-slate-400 mb-4">Teaching the system to think ahead</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-slate-900/50 rounded p-3">
+                                <h4 class="text-sm font-semibold text-purple-300 mb-2">Technologies</h4>
+                                <ul class="text-xs text-slate-400 space-y-1">
+                                    <li>• Digital Twin environment (isolated)</li>
+                                    <li>• Attack simulation engine (10,000+ scenarios)</li>
+                                    <li>• LLM-powered prediction models</li>
+                                    <li>• MITRE ATT&CK framework</li>
+                                </ul>
+                            </div>
+                            <div class="bg-slate-900/50 rounded p-3">
+                                <h4 class="text-sm font-semibold text-purple-300 mb-2">Results</h4>
+                                <ul class="text-xs text-slate-400 space-y-1">
+                                    <li>• 60% faster response time</li>
+                                    <li>• 94.2% prediction accuracy</li>
+                                    <li>• Safe attack simulation</li>
+                                    <li>• What-if scenario planning</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Phase 3 -->
+                    <div class="phase-tech border-orange-500">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="text-xl font-bold text-orange-400">Q3</span>
+                            <h3 class="text-xl font-semibold text-white">Chronometric Simulation</h3>
+                        </div>
+                        <p class="text-sm text-slate-400 mb-4">Teaching the system to plan</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-slate-900/50 rounded p-3">
+                                <h4 class="text-sm font-semibold text-orange-300 mb-2">Technologies</h4>
+                                <ul class="text-xs text-slate-400 space-y-1">
+                                    <li>• Reinforcement Learning (1M+ scenarios)</li>
+                                    <li>• Time-series threat modeling</li>
+                                    <li>• Autonomous decision engine</li>
+                                    <li>• Response automation</li>
+                                </ul>
+                            </div>
+                            <div class="bg-slate-900/50 rounded p-3">
+                                <h4 class="text-sm font-semibold text-orange-300 mb-2">Results</h4>
+                                <ul class="text-xs text-slate-400 space-y-1">
+                                    <li>• Sub-10-minute MTTR</li>
+                                    <li>• 99% correct decisions</li>
+                                    <li>• Autonomous response</li>
+                                    <li>• Continuous learning loop</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Phase 4 -->
+                    <div class="phase-tech border-green-500">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="text-xl font-bold text-green-400">Q4</span>
+                            <h3 class="text-xl font-semibold text-white">Federated Trust Mesh</h3>
+                        </div>
+                        <p class="text-sm text-slate-400 mb-4">Teaching the system to collaborate</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-slate-900/50 rounded p-3">
+                                <h4 class="text-sm font-semibold text-green-300 mb-2">Technologies</h4>
+                                <ul class="text-xs text-slate-400 space-y-1">
+                                    <li>• Federated Learning architecture</li>
+                                    <li>• Privacy-preserving sharing</li>
+                                    <li>• Zero-trust enforcement</li>
+                                    <li>• Cross-org intelligence</li>
+                                </ul>
+                            </div>
+                            <div class="bg-slate-900/50 rounded p-3">
+                                <h4 class="text-sm font-semibold text-green-300 mb-2">Results</h4>
+                                <ul class="text-xs text-slate-400 space-y-1">
+                                    <li>• 10x broader threat visibility</li>
+                                    <li>• Collective defense network</li>
+                                    <li>• Privacy-preserved intelligence</li>
+                                    <li>• Multi-org compliance</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Technology Metrics -->
+            <section class="tech-card rounded-xl bg-slate-950 border border-slate-700 p-6">
+                <h2 class="text-2xl font-bold text-white mb-4">Technology Performance Metrics</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 rounded-lg p-4 border border-blue-600/30">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm text-slate-400">Processing Speed</span>
+                            <span class="metric-badge">50M+/day</span>
+                        </div>
+                        <div class="text-2xl font-bold text-white">50M+ Events</div>
+                        <div class="text-xs text-slate-400 mt-1">Daily processing capacity</div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-purple-600/20 to-pink-600/20 rounded-lg p-4 border border-purple-600/30">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm text-slate-400">Detection Accuracy</span>
+                            <span class="metric-badge">99.2%</span>
+                        </div>
+                        <div class="text-2xl font-bold text-white">99.2%</div>
+                        <div class="text-xs text-slate-400 mt-1">Threat detection accuracy</div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-orange-600/20 to-red-600/20 rounded-lg p-4 border border-orange-600/30">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm text-slate-400">Response Time</span>
+                            <span class="metric-badge">8.3 min</span>
+                        </div>
+                        <div class="text-2xl font-bold text-white">8.3 min</div>
+                        <div class="text-xs text-slate-400 mt-1">Mean Time To Response</div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-green-600/20 to-emerald-600/20 rounded-lg p-4 border border-green-600/30">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm text-slate-400">Compliance Score</span>
+                            <span class="metric-badge">95.8%</span>
+                        </div>
+                        <div class="text-2xl font-bold text-white">95.8%</div>
+                        <div class="text-xs text-slate-400 mt-1">Automated compliance</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Technology Decisions -->
+            <section class="tech-card rounded-xl bg-slate-950 border border-slate-700 p-6">
+                <h2 class="text-2xl font-bold text-white mb-4">Key Technology Decisions</h2>
+                <div class="space-y-4">
+                    <div class="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+                        <h3 class="font-semibold text-white mb-2">Serverless vs. Containers</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <div class="text-sm font-semibold text-blue-300 mb-1">Phase 2: Serverless ✓</div>
+                                <ul class="text-xs text-slate-400 space-y-1">
+                                    <li>• Cloud Functions for orchestration</li>
+                                    <li>• Dataflow for ETL pipelines</li>
+                                    <li>• Lower cost (~$750/month)</li>
+                                    <li>• Pay-per-execution model</li>
+                                    <li>• Easier to manage</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <div class="text-sm font-semibold text-orange-300 mb-1">Phase 3: Containers ✓</div>
+                                <ul class="text-xs text-slate-400 space-y-1">
+                                    <li>• Cloud Run / GKE for RL agents</li>
+                                    <li>• Always-on decision engine</li>
+                                    <li>• SOAR API endpoints</li>
+                                    <li>• Persistent services required</li>
+                                    <li>• Real-time response needs</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+                        <h3 class="font-semibold text-white mb-2">Data Architecture</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <div class="text-sm font-semibold text-purple-300 mb-1">Production Data</div>
+                                <ul class="text-xs text-slate-400 space-y-1">
+                                    <li>• Chronicle SIEM → BigQuery</li>
+                                    <li>• Real-time streaming</li>
+                                    <li>• 6 months retention</li>
+                                    <li>• Petabyte-scale storage</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <div class="text-sm font-semibold text-cyan-300 mb-1">Digital Twin Data</div>
+                                <ul class="text-xs text-slate-400 space-y-1">
+                                    <li>• Isolated BigQuery dataset</li>
+                                    <li>• Monthly snapshots</li>
+                                    <li>• Safe simulation environment</li>
+                                    <li>• 10,000+ attack scenarios</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+                        <h3 class="font-semibold text-white mb-2">AI/ML Architecture</h3>
+                        <div class="space-y-2">
+                            <div class="flex items-start gap-3">
+                                <span class="text-green-400">✓</span>
+                                <div>
+                                    <div class="text-sm font-semibold text-white">Reinforcement Learning</div>
+                                    <div class="text-xs text-slate-400">Trained on 1M+ scenarios, 99% decision accuracy</div>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <span class="text-green-400">✓</span>
+                                <div>
+                                    <div class="text-sm font-semibold text-white">Large Language Models</div>
+                                    <div class="text-xs text-slate-400">Threat prediction and behavior analysis, 94.2% accuracy</div>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <span class="text-green-400">✓</span>
+                                <div>
+                                    <div class="text-sm font-semibold text-white">Federated Learning</div>
+                                    <div class="text-xs text-slate-400">Privacy-preserving collective intelligence across organizations</div>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <span class="text-green-400">✓</span>
+                                <div>
+                                    <div class="text-sm font-semibold text-white">Causal Reasoning</div>
+                                    <div class="text-xs text-slate-400">Infrastructure dependency mapping and threat cascade analysis</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Tab switching
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const tabName = button.dataset.tab;
+                
+                // Update button states
+                document.querySelectorAll('.tab-button').forEach(btn => {
+                    btn.classList.remove('active');
+                    btn.classList.add('text-slate-400');
+                    btn.classList.remove('text-blue-400');
+                });
+                button.classList.add('active');
+                button.classList.remove('text-slate-400');
+                button.classList.add('text-blue-400');
+                
+                // Update content visibility
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.add('hidden');
+                });
+                document.getElementById(tabName).classList.remove('hidden');
+                document.getElementById(tabName).classList.add('slide-in');
+            });
+        });
+
+        // Smooth scroll for better UX
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+

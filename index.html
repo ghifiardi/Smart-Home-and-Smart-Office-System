@@ -594,6 +594,7 @@
                 <div>
                     <h1 class="text-2xl font-bold text-white">AI-Driven SOC Transformation</h1>
                     <p class="text-slate-400 text-xs mt-1">Intelligent Layer with LLM-Powered Agent Reasoning</p>
+                    <div class="text-xs text-slate-500 mt-1">📖 Flow: Network → AI Agents → Metrics → Live Response → Controls</div>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-4 items-end sm:items-center w-full sm:w-auto">
                     <div class="text-right sm:text-right">
@@ -608,6 +609,21 @@
                         aria-label="Play or pause the transformation animation"
                         aria-pressed="true"
                     >▶ Play</button>
+                    <button
+                        id="shiBtn"
+                        class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-lg font-semibold transition shadow-lg hover:shadow-xl"
+                        aria-label="Run live threat response demonstration"
+                    >🛡️ Live Threat Response</button>
+                    <button
+                        id="investorBtn"
+                        class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-lg font-semibold transition shadow-lg hover:shadow-xl"
+                        aria-label="Open investor demo overlay"
+                    >🎬 Investor Demo</button>
+                    <a
+                        href="technology-dashboard.html"
+                        class="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 active:bg-cyan-800 text-white rounded-lg font-semibold transition shadow-lg hover:shadow-xl"
+                        aria-label="View technology dashboard"
+                    >🔧 Technology</a>
                 </div>
             </div>
         </header>
@@ -637,12 +653,16 @@
                         <p id="phaseDescription" class="text-slate-300 text-sm mb-3">Deploying Chronicle SIEM integration and establishing BigQuery data lake</p>
 
                         <!-- Agents -->
+                        <div class="mb-2">
+                            <div class="text-xs text-slate-400 mb-2">💡 Step 2: AI Agents - Click to see reasoning</div>
+                        </div>
                         <div class="flex flex-col sm:flex-row gap-3" role="group" aria-label="AI Agents">
                             <div id="agentADA" class="flex-1 px-3 py-3 rounded-lg border-2 border-slate-600 bg-slate-800/50 transition agent-card" 
                                  role="button" 
                                  tabindex="0"
                                  aria-label="ADA - Adaptive Defense Agent"
-                                 aria-pressed="false">
+                                 aria-pressed="false"
+                                 title="🛡️ ADA: Detects threats in real-time (99.2% accuracy)">
                                 <div class="flex items-center gap-2 mb-1">
                                     <span class="w-4 h-4" aria-hidden="true">🛡</span>
                                     <span class="font-bold text-slate-300 text-sm">ADA</span>
@@ -653,7 +673,8 @@
                                  role="button"
                                  tabindex="0"
                                  aria-label="TAA - Threat Analysis Agent"
-                                 aria-pressed="false">
+                                 aria-pressed="false"
+                                 title="🧠 TAA: Predicts attack patterns (94.2% accuracy)">
                                 <div class="flex items-center gap-2 mb-1">
                                     <span class="w-4 h-4" aria-hidden="true">🧠</span>
                                     <span class="font-bold text-slate-300 text-sm">TAA</span>
@@ -664,7 +685,8 @@
                                  role="button"
                                  tabindex="0"
                                  aria-label="CRA - Compliance Agent"
-                                 aria-pressed="false">
+                                 aria-pressed="false"
+                                 title="✓ CRA: Ensures compliance (95.8% score)">
                                 <div class="flex items-center gap-2 mb-1">
                                     <span class="w-4 h-4" aria-hidden="true">✓</span>
                                     <span class="font-bold text-slate-300 text-sm">CRA</span>
@@ -731,7 +753,7 @@
                     <div class="flex items-center justify-between mb-3 pb-3 border-b border-slate-700">
                         <div class="flex items-center gap-2">
                             <span class="text-green-400">📊</span>
-                            <span class="text-sm font-semibold text-white">Transformation Metrics</span>
+                            <span class="text-sm font-semibold text-white">Step 3: Key Metrics</span>
                         </div>
                         <div class="text-xs text-slate-400">Live Updates</div>
                     </div>
@@ -793,11 +815,78 @@
 
                 <!-- Phase Navigation -->
                 <nav class="rounded-xl bg-slate-950 border border-slate-700 p-3" aria-label="Phase navigation">
-                    <div class="text-xs font-semibold text-slate-300 mb-2">PHASES</div>
+                    <div class="text-xs font-semibold text-slate-300 mb-2">Step 5: Demo Controls</div>
+                    <div class="text-xs text-slate-500 mb-2">Use Play/Pause to control transformation phases</div>
+                    <div class="text-xs font-semibold text-slate-300 mb-2 mt-3">PHASES</div>
                     <div id="phaseButtons" class="space-y-1" role="tablist" aria-label="Transformation phases">
                         <!-- Buttons generated by JS -->
                     </div>
                 </nav>
+                
+                <!-- Autonomous Self-Healing Panel -->
+                <section class="rounded-xl bg-slate-950 border border-slate-700 p-4" aria-label="Autonomous Self-Healing">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <span>🛡️</span>
+                            <span class="text-sm font-semibold text-white">Step 4: Live Threat Response</span>
+                        </div>
+                        <span id="shiStatus" class="text-xs px-2 py-1 rounded bg-slate-800 text-slate-400">Ready</span>
+                    </div>
+                    <div class="text-xs text-slate-500 mb-2">💡 Click "Live Threat Response" button to see autonomous defense in action</div>
+                    
+                    <!-- Threat Summary Card -->
+                    <div id="shiThreatCard" class="hidden mb-3 p-3 bg-gradient-to-r from-red-900/20 to-orange-900/20 border border-red-700/30 rounded-lg">
+                        <div class="flex items-start gap-2 mb-2">
+                            <span class="text-red-400 text-lg">⚠️</span>
+                            <div class="flex-1">
+                                <div class="text-sm font-semibold text-red-300" id="shiThreatTitle">Threat Detected</div>
+                                <div class="text-xs text-slate-400 mt-1" id="shiThreatDesc">-</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Agent Status Cards -->
+                    <div class="grid grid-cols-3 gap-2 mb-3">
+                        <div class="bg-slate-900 rounded-lg p-2 border border-slate-700">
+                            <div class="flex items-center gap-1 mb-1">
+                                <span class="text-blue-400 text-xs">🛡️</span>
+                                <div class="text-xs text-slate-400">ADA Detects</div>
+                            </div>
+                            <div id="shiStepDetect" class="text-xs font-semibold text-slate-300">Waiting...</div>
+                        </div>
+                        <div class="bg-slate-900 rounded-lg p-2 border border-slate-700">
+                            <div class="flex items-center gap-1 mb-1">
+                                <span class="text-purple-400 text-xs">🧠</span>
+                                <div class="text-xs text-slate-400">TAA Predicts</div>
+                            </div>
+                            <div id="shiStepDecide" class="text-xs font-semibold text-slate-300">Waiting...</div>
+                        </div>
+                        <div class="bg-slate-900 rounded-lg p-2 border border-slate-700">
+                            <div class="flex items-center gap-1 mb-1">
+                                <span class="text-green-400 text-xs">✓</span>
+                                <div class="text-xs text-slate-400">CRA Validates</div>
+                            </div>
+                            <div id="shiStepRemediate" class="text-xs font-semibold text-slate-300">Waiting...</div>
+                        </div>
+                    </div>
+
+                    <!-- Action Timeline -->
+                    <div class="mb-3">
+                        <div class="text-xs text-slate-400 mb-2">Response Timeline:</div>
+                        <div id="shiLog" class="scroll-container h-32 bg-slate-900/60 border border-slate-700 rounded p-2 space-y-1.5 text-xs leading-relaxed" role="log" aria-live="polite"></div>
+                    </div>
+
+                    <!-- Results Summary -->
+                    <div id="shiResults" class="hidden mt-3 p-3 bg-gradient-to-r from-green-900/20 to-emerald-900/20 border border-green-700/30 rounded-lg">
+                        <div class="flex items-start gap-2">
+                            <span class="text-green-400 text-lg">✅</span>
+                            <div class="flex-1">
+                                <div class="text-sm font-semibold text-green-300 mb-1">Threat Contained</div>
+                                <div class="text-xs text-slate-300 space-y-1" id="shiResultsList"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
             </div>
         </main>
 
@@ -807,6 +896,47 @@
             <p class="text-slate-300 text-sm">
                 3× faster response • 40% less noise • 95%+ compliant • Federated defense
             </p>
+        </div>
+    </div>
+
+    <!-- Investor Demo Overlay -->
+    <div id="investorOverlay" class="fixed inset-0 bg-slate-900/90 hidden z-40">
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="w-full max-w-3xl bg-slate-950 border border-slate-700 rounded-xl shadow-2xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <span>🎯</span>
+                        <span class="text-white font-semibold">Investor Demo</span>
+                    </div>
+                    <button id="investorClose" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded">✕</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+                    <div class="bg-slate-900 rounded p-3">
+                        <div class="text-slate-400 text-xs">Time to Value</div>
+                        <div class="text-white text-xl font-bold">12 weeks</div>
+                    </div>
+                    <div class="bg-slate-900 rounded p-3">
+                        <div class="text-slate-400 text-xs">Response Speed</div>
+                        <div class="text-white text-xl font-bold">73% faster</div>
+                    </div>
+                    <div class="bg-slate-900 rounded p-3">
+                        <div class="text-slate-400 text-xs">False Positives</div>
+                        <div class="text-white text-xl font-bold">-79%</div>
+                    </div>
+                </div>
+                <div class="rounded border border-slate-700 bg-slate-900/60 p-4 min-h-[220px]">
+                    <div id="investorSlideTitle" class="text-white text-lg font-semibold mb-1">—</div>
+                    <div id="investorSlideSubtitle" class="text-slate-300 text-sm mb-3">—</div>
+                    <ul id="investorSlidePoints" class="list-disc list-inside text-slate-300 text-sm space-y-1"></ul>
+                </div>
+                <div class="flex items-center justify-between mt-4">
+                    <div class="text-xs text-slate-400">Step <span id="investorStep">1</span> / <span id="investorTotal">3</span></div>
+                    <div class="flex gap-2">
+                        <button id="investorPrev" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded">⟨ Prev</button>
+                        <button id="investorNext" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded">Next ⟩</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1278,6 +1408,263 @@
                 }
             }
         });
+
+        class ParentOrchestrator {
+            constructor(ui){
+                this.ui = ui;
+                this.scenarios = [
+                    {
+                        threat: 'Lateral Movement Attack',
+                        description: 'Unauthorized access detected: Attacker moving from web server to database',
+                        source: 'web-prod-01',
+                        target: 'db-prod-02',
+                        severity: 'high',
+                        adaDetect: 'Multiple failed auth attempts followed by successful connection',
+                        taaPredict: 'Attacker will attempt data exfiltration within 5 minutes',
+                        actions: [
+                            { name: 'Isolate Network Segment', desc: 'Block all traffic from web-prod-01 subnet', icon: '🔥' },
+                            { name: 'Revoke Credentials', desc: 'Disable compromised user accounts', icon: '🔐' },
+                            { name: 'Kill Malicious Process', desc: 'Terminate suspicious process on db-prod-02', icon: '🖥️' }
+                        ]
+                    },
+                    {
+                        threat: 'Data Exfiltration Attempt',
+                        description: 'Large data transfer detected: 2.5GB sent to external IP',
+                        source: 'api-server-03',
+                        target: 'external:185.220.101.x',
+                        severity: 'critical',
+                        adaDetect: 'Unusual outbound data volume (250x normal baseline)',
+                        taaPredict: 'Attacker will complete exfiltration in 3 minutes',
+                        actions: [
+                            { name: 'Block External IP', desc: 'Firewall rule blocks 185.220.101.x', icon: '🚫' },
+                            { name: 'Isolate Endpoint', desc: 'Disconnect api-server-03 from network', icon: '🔌' },
+                            { name: 'Preserve Evidence', desc: 'Create forensic snapshot for investigation', icon: '📸' }
+                        ]
+                    },
+                    {
+                        threat: 'Privilege Escalation',
+                        description: 'Service account attempting admin-level access',
+                        source: 'svc-account:app-backend',
+                        target: 'admin-endpoints',
+                        severity: 'high',
+                        adaDetect: 'Service account requesting admin API tokens',
+                        taaPredict: 'Attacker will gain full system access in 8 minutes',
+                        actions: [
+                            { name: 'Revoke Service Account', desc: 'Disable svc-account:app-backend immediately', icon: '🔐' },
+                            { name: 'Reset Admin Credentials', desc: 'Force password reset for all admin accounts', icon: '🔄' },
+                            { name: 'Review Access Logs', desc: 'Analyze all admin-endpoint access attempts', icon: '📋' }
+                        ]
+                    }
+                ];
+            }
+            
+            sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+            
+            log(message, level='info', icon=''){
+                const el = document.createElement('div');
+                el.className = 'log-entry';
+                const ts = new Date().toLocaleTimeString();
+                let color = 'text-slate-300';
+                let bgColor = '';
+                if (level === 'error') {
+                    color = 'text-red-400';
+                    bgColor = 'bg-red-900/20';
+                } else if (level === 'warn') {
+                    color = 'text-yellow-400';
+                    bgColor = 'bg-yellow-900/20';
+                } else if (level === 'success') {
+                    color = 'text-green-400';
+                    bgColor = 'bg-green-900/20';
+                }
+                const iconHtml = icon ? `<span class="mr-1">${icon}</span>` : '';
+                el.className = `log-entry ${bgColor} px-2 py-1 rounded`;
+                el.innerHTML = `<span class="text-slate-500 text-xs">[${ts}]</span> <span class="${color}">${iconHtml}${message}</span>`;
+                this.ui.log.appendChild(el);
+                this.ui.log.scrollTop = this.ui.log.scrollHeight;
+            }
+            
+            setStep(id, text, status='active'){
+                const target = this.ui[id];
+                if (target) {
+                    target.textContent = text;
+                    const card = target.closest('.bg-slate-900');
+                    if (card) {
+                        card.classList.remove('border-blue-500', 'border-purple-500', 'border-green-500', 'border-green-600');
+                        if (status === 'active') {
+                            if (id === 'shiStepDetect') card.classList.add('border-blue-500');
+                            else if (id === 'shiStepDecide') card.classList.add('border-purple-500');
+                            else if (id === 'shiStepRemediate') card.classList.add('border-green-500');
+                        } else if (status === 'completed') {
+                            card.classList.add('border-green-600');
+                        }
+                    }
+                }
+            }
+            
+            setStatus(text, color='slate'){
+                this.ui.status.textContent = text;
+                const colors = {
+                    'slate': 'bg-slate-800 text-slate-400',
+                    'blue': 'bg-blue-900/50 text-blue-300',
+                    'green': 'bg-green-900/50 text-green-300',
+                    'red': 'bg-red-900/50 text-red-300'
+                };
+                this.ui.status.className = `text-xs px-2 py-1 rounded ${colors[color] || colors.slate}`;
+            }
+            
+            showThreatCard(scenario){
+                const card = document.getElementById('shiThreatCard');
+                const title = document.getElementById('shiThreatTitle');
+                const desc = document.getElementById('shiThreatDesc');
+                title.textContent = scenario.threat;
+                desc.textContent = scenario.description;
+                card.classList.remove('hidden');
+            }
+            
+            hideResults(){
+                document.getElementById('shiResults').classList.add('hidden');
+            }
+            
+            showResults(actions){
+                const resultsDiv = document.getElementById('shiResults');
+                const resultsList = document.getElementById('shiResultsList');
+                resultsList.innerHTML = actions.map(a => 
+                    `<div class="flex items-center gap-2"><span>${a.icon}</span><span>${a.name}</span></div>`
+                ).join('');
+                resultsDiv.classList.remove('hidden');
+            }
+            
+            async runScenario(){
+                try{
+                    // Reset UI
+                    this.ui.log.innerHTML = '';
+                    this.hideResults();
+                    document.getElementById('shiThreatCard').classList.add('hidden');
+                    this.setStatus('Analyzing...', 'blue');
+                    
+                    // Select random scenario
+                    const scenario = this.scenarios[Math.floor(Math.random() * this.scenarios.length)];
+                    this.showThreatCard(scenario);
+                    
+                    // Step 1: ADA Detection
+                    this.setStep('shiStepDetect', 'Analyzing...', 'active');
+                    this.log('🛡️ ADA: Scanning network traffic and system logs...', 'info');
+                    await this.sleep(800);
+                    this.log(`🔍 Detected: ${scenario.adaDetect}`, 'warn');
+                    this.setStep('shiStepDetect', scenario.threat, 'completed');
+                    this.log(`📍 Source: ${scenario.source} → Target: ${scenario.target}`, 'info');
+                    
+                    // Step 2: TAA Prediction
+                    this.setStep('shiStepDecide', 'Predicting...', 'active');
+                    this.log('🧠 TAA: Analyzing attack pattern and predicting next moves...', 'info');
+                    await this.sleep(1000);
+                    this.log(`🔮 Prediction: ${scenario.taaPredict}`, 'warn');
+                    this.setStep('shiStepDecide', `${scenario.actions.length} actions planned`, 'completed');
+                    
+                    // Step 3: CRA Validation
+                    this.setStep('shiStepRemediate', 'Validating...', 'active');
+                    this.log('✓ CRA: Checking compliance rules (PDP, GDPR)...', 'info');
+                    await this.sleep(600);
+                    this.log('✅ CRA: All actions comply with regulations', 'success');
+                    this.setStep('shiStepRemediate', 'Approved', 'completed');
+                    
+                    // Step 4: Execute Actions
+                    this.log('⚙️ Executing autonomous response plan...', 'info');
+                    await this.sleep(300);
+                    
+                    for (let i = 0; i < scenario.actions.length; i++) {
+                        const action = scenario.actions[i];
+                        this.log(`${action.icon} Executing: ${action.name}`, 'info');
+                        await this.sleep(700);
+                        this.log(`   → ${action.desc}`, 'info');
+                        await this.sleep(500);
+                        this.log(`   ✓ ${action.name} completed successfully`, 'success');
+                    }
+                    
+                    // Success
+                    this.setStatus('Threat Contained', 'green');
+                    this.log('🎉 All containment actions completed successfully', 'success');
+                    this.log('🔒 System is now secure', 'success');
+                    this.showResults(scenario.actions);
+                    
+                } catch(err) {
+                    this.setStatus('Error', 'red');
+                    this.log(`❌ Error: ${err.message}`, 'error');
+                    this.log('🔄 Initiating rollback procedure...', 'warn');
+                    await this.sleep(500);
+                    this.log('✅ Rollback completed - system restored to safe state', 'success');
+                }
+            }
+        }
+
+        const orchestrator = new ParentOrchestrator({
+            log: document.getElementById('shiLog'),
+            status: document.getElementById('shiStatus'),
+            detect: document.getElementById('shiStepDetect'),
+            decide: document.getElementById('shiStepDecide'),
+            remediate: document.getElementById('shiStepRemediate')
+        });
+
+        document.getElementById('shiBtn')?.addEventListener('click', ()=> orchestrator.runScenario());
+
+        // Investor Demo logic
+        const investorSlides = [
+            {
+                title: 'The Problem: Inefficient Security Operations',
+                subtitle: 'High costs, slow response, overwhelmed teams',
+                points: [
+                    '30 min average response time leads to higher risk',
+                    '42% of alerts are false positives (wasted effort)',
+                    'Breaches cost $4.45M on average'
+                ]
+            },
+            {
+                title: 'The Solution: Digital Twin AI-Driven SOC',
+                subtitle: 'Predictive, autonomous, compliant by design',
+                points: [
+                    'AI learns from 10,000+ safe simulations (no prod risk)',
+                    'Three agents: Detect (ADA), Predict (TAA), Comply (CRA)',
+                    'Automated runbooks execute in minutes'
+                ]
+            },
+            {
+                title: 'The Outcomes: Faster, Cheaper, Safer',
+                subtitle: 'Time-to-value in weeks, measurable ROI',
+                points: [
+                    '73% faster response (30 min → 8.3 min)',
+                    '79% fewer false positives (focus on real threats)',
+                    '12-week implementation with compounding benefits'
+                ]
+            }
+        ];
+
+        let investorIndex = 0;
+        function renderInvestorSlide(){
+            const s = investorSlides[investorIndex];
+            document.getElementById('investorSlideTitle').textContent = s.title;
+            document.getElementById('investorSlideSubtitle').textContent = s.subtitle;
+            const ul = document.getElementById('investorSlidePoints');
+            ul.innerHTML = '';
+            s.points.forEach(p=>{
+                const li = document.createElement('li');
+                li.textContent = p;
+                ul.appendChild(li);
+            });
+            document.getElementById('investorStep').textContent = investorIndex + 1;
+            document.getElementById('investorTotal').textContent = investorSlides.length;
+        }
+
+        function openInvestor(){
+            document.getElementById('investorOverlay').classList.remove('hidden');
+            investorIndex = 0; renderInvestorSlide();
+        }
+        function closeInvestor(){
+            document.getElementById('investorOverlay').classList.add('hidden');
+        }
+        document.getElementById('investorBtn')?.addEventListener('click', openInvestor);
+        document.getElementById('investorClose')?.addEventListener('click', closeInvestor);
+        document.getElementById('investorPrev')?.addEventListener('click', ()=>{ investorIndex = Math.max(0, investorIndex-1); renderInvestorSlide(); });
+        document.getElementById('investorNext')?.addEventListener('click', ()=>{ investorIndex = Math.min(investorSlides.length-1, investorIndex+1); renderInvestorSlide(); });
 
         // Initialize
         updatePhaseDisplay();
