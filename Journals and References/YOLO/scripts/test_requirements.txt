@@ -1,0 +1,5 @@
+# Requirements for test_services.py
+httpx==0.26.0
+redis==5.0.1
+psycopg2-binary==2.9.9
+paho-mqtt==1.6.1
