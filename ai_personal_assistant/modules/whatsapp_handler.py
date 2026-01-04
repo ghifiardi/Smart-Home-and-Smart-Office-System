@@ -4,6 +4,7 @@ Handles WhatsApp messaging operations
 """
 
 import logging
+import re
 from typing import Optional
 from datetime import datetime, timedelta
 
@@ -27,6 +28,24 @@ class WhatsAppHandler:
         else:
             logger.info("WhatsApp handler initialized")
     
+    def _validate_phone_number(self, phone_number: str) -> bool:
+        """
+        Validate phone number format
+        
+        Args:
+            phone_number: Phone number to validate
+            
+        Returns:
+            True if valid, False otherwise
+        """
+        # Check for international format with country code
+        pattern = r'^\+\d{1,3}\d{7,14}$'
+        if re.match(pattern, phone_number):
+            return True
+        
+        logger.warning(f"Invalid phone number format: {phone_number}. Expected format: +1234567890")
+        return False
+    
     def send_message(self, phone_number: str, message: str, 
                     schedule_time: Optional[datetime] = None) -> bool:
         """
@@ -42,6 +61,9 @@ class WhatsAppHandler:
         """
         if not PYWHATKIT_AVAILABLE:
             logger.error("pywhatkit is not available")
+            return False
+        
+        if not self._validate_phone_number(phone_number):
             return False
             
         try:

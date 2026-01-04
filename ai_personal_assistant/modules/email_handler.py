@@ -7,6 +7,7 @@ import logging
 import smtplib
 import imaplib
 import email
+import email.utils
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from typing import List, Optional, Dict

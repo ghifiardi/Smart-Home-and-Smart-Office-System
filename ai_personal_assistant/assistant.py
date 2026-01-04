@@ -5,6 +5,7 @@ Coordinates all modules and handles command execution
 
 import logging
 import sys
+import os
 from typing import Optional
 from datetime import datetime, timedelta
 
@@ -15,6 +16,9 @@ from modules.powerpoint_handler import PowerPointHandler
 from modules.email_handler import EmailHandler
 from modules.calendar_handler import CalendarHandler
 from modules.whatsapp_handler import WhatsAppHandler
+
+# Ensure logs directory exists
+os.makedirs('logs', exist_ok=True)
 
 # Configure logging
 logging.basicConfig(
@@ -58,18 +62,25 @@ class PersonalAssistant:
             self.powerpoint_handler = PowerPointHandler()
             
             # Initialize email handler if credentials provided
-            if config.get('email_address') and config.get('email_password'):
+            email_config = config.get('email', {})
+            if email_config.get('address') and email_config.get('password'):
                 self.email_handler = EmailHandler(
-                    email_address=config['email_address'],
-                    password=config['email_password']
+                    email_address=email_config['address'],
+                    password=email_config['password'],
+                    smtp_server=email_config.get('smtp_server', 'smtp-mail.outlook.com'),
+                    smtp_port=email_config.get('smtp_port', 587),
+                    imap_server=email_config.get('imap_server', 'outlook.office365.com'),
+                    imap_port=email_config.get('imap_port', 993)
                 )
             else:
                 self.email_handler = None
                 logger.warning("Email handler not initialized - credentials missing")
             
             # Initialize calendar handler
+            calendar_config = config.get('calendar', {})
             self.calendar_handler = CalendarHandler(
-                credentials_file=config.get('calendar_credentials', 'credentials.json')
+                credentials_file=calendar_config.get('credentials_file', 'credentials.json'),
+                timezone=calendar_config.get('timezone', 'America/Los_Angeles')
             )
             
             # Initialize WhatsApp handler
@@ -346,9 +357,14 @@ def main():
         'language': 'en-US',
         'speech_rate': 175,
         'speech_volume': 0.9,
-        'email_address': '',  # Set your email
-        'email_password': '',  # Set your password
-        'calendar_credentials': 'credentials.json'
+        'email': {
+            'address': '',  # Set your email
+            'password': '',  # Set your password
+        },
+        'calendar': {
+            'credentials_file': 'credentials.json',
+            'timezone': 'America/Los_Angeles'
+        }
     }
     
     try:

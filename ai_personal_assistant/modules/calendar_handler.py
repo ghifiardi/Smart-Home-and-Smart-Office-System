@@ -22,14 +22,16 @@ SCOPES = ['https://www.googleapis.com/auth/calendar']
 class CalendarHandler:
     """Handler for calendar operations using Google Calendar API"""
     
-    def __init__(self, credentials_file: str = "credentials.json"):
+    def __init__(self, credentials_file: str = "credentials.json", timezone: str = "America/Los_Angeles"):
         """
         Initialize calendar handler
         
         Args:
             credentials_file: Path to Google Calendar API credentials file
+            timezone: Timezone for events (default: America/Los_Angeles)
         """
         self.credentials_file = credentials_file
+        self.timezone = timezone
         self.service = None
         self._authenticate()
     
@@ -93,11 +95,11 @@ class CalendarHandler:
                 'description': description,
                 'start': {
                     'dateTime': start_time.isoformat(),
-                    'timeZone': 'America/Los_Angeles',
+                    'timeZone': self.timezone,
                 },
                 'end': {
                     'dateTime': end_time.isoformat(),
-                    'timeZone': 'America/Los_Angeles',
+                    'timeZone': self.timezone,
                 },
                 'reminders': {
                     'useDefault': False,

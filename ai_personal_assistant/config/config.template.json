@@ -1,6 +1,3 @@
-# Configuration file for AI Personal Assistant
-# Copy this file to config.json and update with your credentials
-
 {
   "language": "en-US",
   "speech_rate": 175,
@@ -16,7 +13,8 @@
   },
   
   "calendar": {
-    "credentials_file": "credentials.json"
+    "credentials_file": "credentials.json",
+    "timezone": "America/Los_Angeles"
   },
   
   "powerpoint": {
