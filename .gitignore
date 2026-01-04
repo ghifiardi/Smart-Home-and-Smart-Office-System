@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# AI Personal Assistant specific
+ai_personal_assistant/config/config.json
+ai_personal_assistant/credentials.json
+ai_personal_assistant/token.pickle
+ai_personal_assistant/*.pptx
+ai_personal_assistant/*.xlsx
+ai_personal_assistant/*.docx

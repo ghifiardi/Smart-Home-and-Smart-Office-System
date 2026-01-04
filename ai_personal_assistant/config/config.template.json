@@ -1,0 +1,35 @@
+{
+  "language": "en-US",
+  "speech_rate": 175,
+  "speech_volume": 0.9,
+  
+  "email": {
+    "address": "your-email@outlook.com",
+    "password": "your-app-password",
+    "smtp_server": "smtp-mail.outlook.com",
+    "smtp_port": 587,
+    "imap_server": "outlook.office365.com",
+    "imap_port": 993
+  },
+  
+  "calendar": {
+    "credentials_file": "credentials.json",
+    "timezone": "America/Los_Angeles"
+  },
+  
+  "powerpoint": {
+    "default_template": null
+  },
+  
+  "whatsapp": {
+    "default_country_code": "+1"
+  },
+  
+  "wake_word": "assistant",
+  
+  "preferences": {
+    "confirm_before_sending": true,
+    "auto_save_presentations": true,
+    "log_level": "INFO"
+  }
+}
