@@ -1,0 +1,38 @@
+# AI Personal Assistant - Configuration and sensitive files
+*.log
+*.pickle
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+
+# Virtual environment
+venv/
+env/
+ENV/
+
+# Configuration files with credentials
+config/config.json
+credentials.json
+token.pickle
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Generated presentations and files
+*.pptx
+*.xlsx
+*.docx
+
+# Temporary files
+*.tmp
+.cache/
