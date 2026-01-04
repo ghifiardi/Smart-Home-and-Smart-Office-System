@@ -4,11 +4,17 @@ Handles WhatsApp messaging operations
 """
 
 import logging
-import pywhatkit as kit
 from typing import Optional
 from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
+
+try:
+    import pywhatkit as kit
+    PYWHATKIT_AVAILABLE = True
+except Exception as e:
+    logger.warning(f"pywhatkit not available: {e}")
+    PYWHATKIT_AVAILABLE = False
 
 
 class WhatsAppHandler:
@@ -16,7 +22,10 @@ class WhatsAppHandler:
     
     def __init__(self):
         """Initialize WhatsApp handler"""
-        logger.info("WhatsApp handler initialized")
+        if not PYWHATKIT_AVAILABLE:
+            logger.warning("WhatsApp handler initialized but pywhatkit is not available")
+        else:
+            logger.info("WhatsApp handler initialized")
     
     def send_message(self, phone_number: str, message: str, 
                     schedule_time: Optional[datetime] = None) -> bool:
@@ -31,6 +40,10 @@ class WhatsAppHandler:
         Returns:
             True if successful, False otherwise
         """
+        if not PYWHATKIT_AVAILABLE:
+            logger.error("pywhatkit is not available")
+            return False
+            
         try:
             if schedule_time:
                 # Schedule message for specific time
@@ -71,6 +84,10 @@ class WhatsAppHandler:
         Returns:
             True if successful, False otherwise
         """
+        if not PYWHATKIT_AVAILABLE:
+            logger.error("pywhatkit is not available")
+            return False
+            
         try:
             kit.sendwhatmsg_instantly(
                 phone_number, 
@@ -98,6 +115,10 @@ class WhatsAppHandler:
         Returns:
             True if successful, False otherwise
         """
+        if not PYWHATKIT_AVAILABLE:
+            logger.error("pywhatkit is not available")
+            return False
+            
         try:
             if schedule_time:
                 hour = schedule_time.hour
@@ -138,6 +159,10 @@ class WhatsAppHandler:
         Returns:
             True if successful, False otherwise
         """
+        if not PYWHATKIT_AVAILABLE:
+            logger.error("pywhatkit is not available")
+            return False
+            
         try:
             kit.sendwhats_image(
                 phone_number,
