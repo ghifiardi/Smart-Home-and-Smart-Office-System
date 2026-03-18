@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>CyberCity Flight Simulator</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { overflow: hidden; background: #0a0e1a; font-family: 'Courier New', monospace; touch-action: none; }
+  canvas { display: block; }
+
+  /* Landing Screen */
+  #landing {
+    position: fixed; inset: 0; z-index: 1000;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: rgba(10,14,26,0.92);
+    backdrop-filter: blur(20px);
+  }
+  #landing h1 {
+    font-size: clamp(28px, 6vw, 52px); color: #5b8aff;
+    letter-spacing: 8px; text-transform: uppercase;
+    text-shadow: 0 0 30px rgba(91,138,255,0.5);
+    margin-bottom: 8px;
+  }
+  #landing .subtitle {
+    color: #667a9b; font-size: clamp(12px, 2.5vw, 16px);
+    letter-spacing: 3px; margin-bottom: 50px;
+  }
+  .mode-cards { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; padding: 0 20px; }
+  .mode-card {
+    width: 200px; padding: 30px 20px;
+    background: rgba(30,42,70,0.6);
+    border: 1px solid rgba(91,138,255,0.2);
+    border-radius: 12px; cursor: pointer;
+    text-align: center; transition: all 0.3s;
+  }
+  .mode-card:hover {
+    border-color: rgba(91,138,255,0.6);
+    background: rgba(30,42,70,0.9);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(91,138,255,0.2);
+  }
+  .mode-card .icon { font-size: 40px; margin-bottom: 12px; }
+  .mode-card .name {
+    font-size: 18px; color: #5b8aff; letter-spacing: 4px;
+    text-transform: uppercase; margin-bottom: 8px;
+  }
+  .mode-card .desc { color: #667a9b; font-size: 12px; line-height: 1.5; }
+
+  /* HUD */
+  #hud {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    display: none; z-index: 100; pointer-events: none;
+  }
+  #hud-bar {
+    display: flex; justify-content: center; gap: 4px;
+    padding: 8px 12px;
+    background: rgba(10,14,26,0.85);
+    border-top: 1px solid rgba(91,138,255,0.15);
+  }
+  .hud-item {
+    text-align: center; padding: 6px 14px; min-width: 80px;
+    background: rgba(30,42,70,0.5); border-radius: 6px;
+    border: 1px solid rgba(91,138,255,0.1);
+  }
+  .hud-label { font-size: 9px; color: #4a6080; letter-spacing: 2px; text-transform: uppercase; }
+  .hud-value { font-size: 20px; color: #c0d4ff; margin-top: 2px; }
+  .hud-value.red { color: #ff4444; }
+  .hud-value.green { color: #44ff88; }
+
+  /* Crosshair */
+  #crosshair {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 40px; height: 40px; display: none; z-index: 90;
+    pointer-events: none;
+  }
+  #crosshair::before, #crosshair::after {
+    content: ''; position: absolute;
+    background: rgba(91,138,255,0.4);
+  }
+  #crosshair::before { width: 2px; height: 100%; left: 50%; transform: translateX(-50%); }
+  #crosshair::after { height: 2px; width: 100%; top: 50%; transform: translateY(-50%); }
+  #crosshair .dot {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 4px; height: 4px; border-radius: 50%;
+    background: #5b8aff; box-shadow: 0 0 8px #5b8aff;
+  }
+
+  /* Mobile Controls */
+  #mobile-controls {
+    position: fixed; bottom: 80px; left: 0; right: 0;
+    display: none; z-index: 100;
+    padding: 0 16px;
+    justify-content: space-between; align-items: flex-end;
+  }
+  #joystick-zone {
+    width: 140px; height: 140px; position: relative;
+    pointer-events: auto;
+  }
+  #joystick-base {
+    width: 140px; height: 140px; border-radius: 50%;
+    background: rgba(91,138,255,0.08);
+    border: 2px solid rgba(91,138,255,0.2);
+    position: relative;
+  }
+  #joystick-thumb {
+    width: 50px; height: 50px; border-radius: 50%;
+    background: rgba(91,138,255,0.25);
+    border: 2px solid rgba(91,138,255,0.4);
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    transition: none;
+  }
+
+  .right-controls {
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    pointer-events: auto;
+  }
+  .ctrl-btn {
+    width: 60px; height: 60px; border-radius: 50%;
+    border: 2px solid; display: flex; align-items: center;
+    justify-content: center; font-size: 20px; cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+  .btn-up {
+    background: rgba(91,138,255,0.15); border-color: rgba(91,138,255,0.4);
+    color: #5b8aff;
+  }
+  .btn-down {
+    background: rgba(80,80,100,0.15); border-color: rgba(100,100,130,0.4);
+    color: #7a7a9a;
+  }
+  .btn-fire {
+    width: 72px; height: 72px;
+    background: rgba(255,50,50,0.2); border-color: rgba(255,80,80,0.5);
+    color: #ff5050; font-size: 14px; font-weight: bold;
+    letter-spacing: 1px; font-family: 'Courier New', monospace;
+  }
+  .btn-missile {
+    width: 56px; height: 56px;
+    background: rgba(255,160,0,0.15); border-color: rgba(255,160,0,0.4);
+    color: #ffa000; font-size: 11px; font-weight: bold;
+    font-family: 'Courier New', monospace;
+  }
+  .ctrl-btn:active { transform: scale(0.92); }
+  .btn-fire:active { background: rgba(255,50,50,0.5); }
+  .btn-missile:active { background: rgba(255,160,0,0.4); }
+  .btn-missile.cooldown { opacity: 0.3; border-color: rgba(100,100,100,0.3); }
+
+  /* Back button */
+  #back-btn {
+    position: fixed; top: 16px; left: 16px; z-index: 200;
+    padding: 8px 16px; background: rgba(10,14,26,0.8);
+    border: 1px solid rgba(91,138,255,0.3); border-radius: 8px;
+    color: #8aa4cc; font-size: 13px; cursor: pointer;
+    font-family: 'Courier New', monospace; display: none;
+    pointer-events: auto; letter-spacing: 1px;
+  }
+  #back-btn:hover { border-color: rgba(91,138,255,0.6); color: #c0d4ff; }
+
+  /* Explore mode info panel */
+  #info-panel {
+    position: fixed; top: 16px; right: 16px; z-index: 200;
+    width: 280px; padding: 16px;
+    background: rgba(10,14,26,0.9);
+    border: 1px solid rgba(91,138,255,0.2);
+    border-radius: 10px; display: none;
+    pointer-events: auto;
+  }
+  #info-panel h3 { color: #5b8aff; font-size: 14px; letter-spacing: 2px; margin-bottom: 8px; }
+  #info-panel .stat { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(91,138,255,0.08); }
+  #info-panel .stat-label { color: #4a6080; font-size: 11px; }
+  #info-panel .stat-value { color: #c0d4ff; font-size: 11px; }
+
+  /* Explosion flash */
+  .explosion-flash {
+    position: fixed; inset: 0; background: rgba(255,200,50,0.15);
+    pointer-events: none; z-index: 80;
+    animation: flash 0.3s ease-out forwards;
+  }
+  @keyframes flash { to { opacity: 0; } }
+
+  /* Minimap */
+  #minimap {
+    position: fixed; top: 16px; right: 16px;
+    width: 120px; height: 120px;
+    background: rgba(10,14,26,0.85);
+    border: 1px solid rgba(91,138,255,0.2);
+    border-radius: 8px; display: none; z-index: 150;
+    overflow: hidden;
+  }
+  #minimap canvas { width: 100%; height: 100%; }
+</style>
+</head>
+<body>
+
+<!-- Landing Screen -->
+<div id="landing">
+  <h1>CYBER.CITY</h1>
+  <div class="subtitle">SOC Flight Simulator Prototype</div>
+  <div class="mode-cards">
+    <div class="mode-card" onclick="startGame('explore')">
+      <div class="icon">🏙️</div>
+      <div class="name">Explore</div>
+      <div class="desc">Orbit the city, click buildings, discover data</div>
+    </div>
+    <div class="mode-card" onclick="startGame('fly')">
+      <div class="icon">✈️</div>
+      <div class="name">Fly</div>
+      <div class="desc">Pilot a drone, fire guns, and launch missiles at the city</div>
+    </div>
+  </div>
+</div>
+
+<!-- HUD -->
+<div id="hud">
+  <div id="hud-bar">
+    <div class="hud-item"><div class="hud-label">Speed</div><div class="hud-value" id="hud-speed">0</div></div>
+    <div class="hud-item"><div class="hud-label">Altitude</div><div class="hud-value" id="hud-alt">0</div></div>
+    <div class="hud-item"><div class="hud-label">Destroyed</div><div class="hud-value red" id="hud-destroyed">0</div></div>
+    <div class="hud-item"><div class="hud-label">Missile</div><div class="hud-value green" id="hud-missile">READY</div></div>
+  </div>
+</div>
+
+<!-- Crosshair -->
+<div id="crosshair"><div class="dot"></div></div>
+
+<!-- Mobile Controls -->
+<div id="mobile-controls">
+  <div id="joystick-zone">
+    <div id="joystick-base">
+      <div id="joystick-thumb"></div>
+    </div>
+  </div>
+  <div class="right-controls">
+    <div class="ctrl-btn btn-up" id="btn-up">▲</div>
+    <div class="ctrl-btn btn-fire" id="btn-fire">FIRE</div>
+    <div class="ctrl-btn btn-missile" id="btn-missile">MSL</div>
+    <div class="ctrl-btn btn-down" id="btn-down">▼</div>
+  </div>
+</div>
+
+<!-- Back Button -->
+<div id="back-btn" onclick="backToLanding()">← Back (ESC)</div>
+
+<!-- Info Panel for Explore Mode -->
+<div id="info-panel">
+  <h3 id="info-title">SELECT A BUILDING</h3>
+  <div id="info-stats"></div>
+</div>
+
+<!-- Minimap -->
+<div id="minimap"><canvas id="minimap-canvas" width="120" height="120"></canvas></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ============================================================
+// CYBER.CITY - SOC Flight Simulator
+// ============================================================
+
+// --- Global State ---
+let scene, camera, renderer, clock;
+let gameMode = null; // 'explore' | 'fly'
+let buildings = [];
+let bullets = [];
+let missiles = [];
+let explosions = [];
+let destroyed = 0;
+let missileReady = true;
+let missileCooldown = 0;
+
+// Aircraft state
+const aircraft = {
+  mesh: null,
+  speed: 60,
+  maxSpeed: 120,
+  minSpeed: 20,
+  altitude: 300,
+  targetAltitude: 300,
+  pitch: 0,
+  yaw: 0,
+  roll: 0,
+  inputX: 0,
+  inputY: 0,
+};
+
+// Explore mode
+let orbitAngle = 0;
+let orbitRadius = 800;
+let orbitHeight = 400;
+let orbitAutoRotate = true;
+let raycaster, mouse;
+let selectedBuilding = null;
+
+// Input state
+const keys = {};
+let isMobile = false;
+let joystickActive = false;
+let joystickX = 0, joystickY = 0;
+let altUp = false, altDown = false;
+let firing = false;
+let fireTimer = 0;
+
+// Building names for SOC theme
+const buildingNames = [
+  'Auth Server', 'Firewall-01', 'DNS Resolver', 'API Gateway', 'DB-Primary',
+  'DB-Replica', 'Load Balancer', 'Redis Cache', 'Kafka Broker', 'SIEM Engine',
+  'IDS Node-A', 'IDS Node-B', 'VPN Gateway', 'SMTP Relay', 'NTP Server',
+  'Log Collector', 'Threat Intel', 'ML Pipeline', 'WAF Cluster', 'CDN Edge',
+  'Container-01', 'Container-02', 'K8s Master', 'K8s Worker-1', 'K8s Worker-2',
+  'Vault Server', 'PKI Authority', 'LDAP Server', 'Proxy-East', 'Proxy-West',
+  'Backup-NAS', 'SFTP Server', 'Git Server', 'CI/CD Runner', 'Monitor Agent',
+  'Elastic Node', 'Grafana Hub', 'Alert Manager', 'Incident Bot', 'SOC Console',
+];
+
+const threatLevels = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
+const threatColors = { LOW: '#44ff88', MEDIUM: '#ffcc00', HIGH: '#ff8844', CRITICAL: '#ff4444' };
+
+// ============================================================
+// INITIALIZATION
+// ============================================================
+
+function init() {
+  // Detect mobile
+  isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+  // Scene
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x0a1628);
+  scene.fog = new THREE.FogExp2(0x0a1628, 0.0008);
+
+  // Camera
+  camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 1, 5000);
+  camera.position.set(0, 400, 800);
+
+  // Renderer
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.shadowMap.enabled = false;
+  document.body.appendChild(renderer.domElement);
+
+  // Clock
+  clock = new THREE.Clock();
+
+  // Raycaster for explore mode
+  raycaster = new THREE.Raycaster();
+  mouse = new THREE.Vector2();
+
+  // Lights
+  const ambient = new THREE.AmbientLight(0x1a2a4a, 0.6);
+  scene.add(ambient);
+
+  const dirLight = new THREE.DirectionalLight(0x4466aa, 0.4);
+  dirLight.position.set(200, 500, 300);
+  scene.add(dirLight);
+
+  // Build the city
+  buildCity();
+
+  // Build ground
+  buildGround();
+
+  // Build stars
+  buildStars();
+
+  // Build aircraft
+  buildAircraft();
+
+  // Event listeners
+  window.addEventListener('resize', onResize);
+  window.addEventListener('keydown', e => { keys[e.code] = true; if (e.code === 'Escape') backToLanding(); });
+  window.addEventListener('keyup', e => keys[e.code] = false);
+  window.addEventListener('click', onClickExplore);
+
+  // Mobile controls
+  setupMobileControls();
+
+  // Start render loop
+  animate();
+}
+
+// ============================================================
+// CITY GENERATION
+// ============================================================
+
+function buildCity() {
+  const citySize = 1200;
+  const blockSize = 24;
+  const gap = 4;
+  const gridStep = blockSize + gap;
+
+  // Create building material variations
+  const buildingMaterials = [];
+  const baseColors = [0x0c1a2e, 0x0e1f35, 0x101830, 0x0a1525, 0x121e38];
+
+  for (let i = 0; i < baseColors.length; i++) {
+    buildingMaterials.push(new THREE.MeshPhongMaterial({
+      color: baseColors[i],
+      emissive: new THREE.Color(0x0a1a3a),
+      emissiveIntensity: 0.3,
+      shininess: 80,
+    }));
+  }
+
+  // Window glow material (used for emissive edges)
+  const windowMat = new THREE.MeshBasicMaterial({ color: 0x3366aa, transparent: true, opacity: 0.6 });
+
+  const numBuildings = 3000;
+
+  for (let i = 0; i < numBuildings; i++) {
+    // Position with some clustering toward center
+    const distFromCenter = Math.random() * Math.random() * citySize;
+    const angle = Math.random() * Math.PI * 2;
+    const bx = Math.round((Math.cos(angle) * distFromCenter) / gridStep) * gridStep;
+    const bz = Math.round((Math.sin(angle) * distFromCenter) / gridStep) * gridStep;
+
+    // Height: taller near center (Manhattan effect)
+    const centerFactor = 1 - (distFromCenter / citySize);
+    const baseHeight = 10 + Math.random() * 40;
+    const heightBoost = centerFactor * centerFactor * 400 * Math.random();
+    const height = baseHeight + heightBoost;
+
+    // Width variation
+    const w = blockSize * (0.5 + Math.random() * 0.5);
+    const d = blockSize * (0.5 + Math.random() * 0.5);
+
+    const geo = new THREE.BoxGeometry(w, height, d);
+    const mat = buildingMaterials[Math.floor(Math.random() * buildingMaterials.length)].clone();
+
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(bx, height / 2, bz);
+
+    // Store building data
+    const threat = threatLevels[Math.floor(Math.random() * 4)];
+    mesh.userData = {
+      isBuilding: true,
+      name: buildingNames[Math.floor(Math.random() * buildingNames.length)],
+      height: Math.round(height),
+      threat: threat,
+      traffic: Math.floor(Math.random() * 10000),
+      alerts: threat === 'CRITICAL' ? Math.floor(Math.random() * 20 + 5) : Math.floor(Math.random() * 5),
+      uptime: (95 + Math.random() * 5).toFixed(1) + '%',
+      originalHeight: height,
+      destroyed: false,
+    };
+
+    scene.add(mesh);
+    buildings.push(mesh);
+
+    // Add window lights (simplified - edge lines for window glow effect)
+    if (height > 30 && Math.random() > 0.3) {
+      addWindowLights(mesh, w, height, d);
+    }
+  }
+}
+
+function addWindowLights(building, w, h, d) {
+  const rows = Math.floor(h / 8);
+  const cols = Math.max(2, Math.floor(w / 6));
+
+  // Use a plane for each lit window face (front and back)
+  const windowGeo = new THREE.PlaneGeometry(w * 0.85, h * 0.85);
+
+  // Create window texture procedurally
+  const canvas = document.createElement('canvas');
+  canvas.width = cols * 8;
+  canvas.height = rows * 8;
+  const ctx = canvas.getContext('2d');
+
+  // Random window color per building
+  const windowHues = ['#1a3a6a', '#1a4a5a', '#2a3a7a', '#1a2a5a', '#2a4a6a'];
+  const baseHue = windowHues[Math.floor(Math.random() * windowHues.length)];
+
+  ctx.fillStyle = 'transparent';
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if (Math.random() > 0.35) {
+        const brightness = 0.3 + Math.random() * 0.7;
+        if (Math.random() > 0.85) {
+          // Occasional warm/colored window
+          ctx.fillStyle = `rgba(${150 + Math.random()*105}, ${100 + Math.random()*100}, ${50 + Math.random()*50}, ${brightness})`;
+        } else {
+          ctx.fillStyle = `rgba(${40 + Math.random()*60}, ${80 + Math.random()*80}, ${150 + Math.random()*105}, ${brightness})`;
+        }
+        ctx.fillRect(c * 8 + 1, r * 8 + 1, 5, 5);
+      }
+    }
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.magFilter = THREE.NearestFilter;
+  texture.minFilter = THREE.NearestFilter;
+
+  const winMat = new THREE.MeshBasicMaterial({
+    map: texture, transparent: true, opacity: 0.9,
+    side: THREE.DoubleSide, depthWrite: false,
+  });
+
+  // Front face
+  const front = new THREE.Mesh(new THREE.PlaneGeometry(w * 0.95, h * 0.9), winMat);
+  front.position.copy(building.position);
+  front.position.z += d / 2 + 0.1;
+  scene.add(front);
+  building.userData.windows = [front];
+
+  // Back face
+  const back = front.clone();
+  back.position.z = building.position.z - d / 2 - 0.1;
+  back.rotation.y = Math.PI;
+  scene.add(back);
+  building.userData.windows.push(back);
+
+  // Side faces
+  const side1 = new THREE.Mesh(new THREE.PlaneGeometry(d * 0.95, h * 0.9), winMat);
+  side1.position.copy(building.position);
+  side1.position.x += w / 2 + 0.1;
+  side1.rotation.y = Math.PI / 2;
+  scene.add(side1);
+  building.userData.windows.push(side1);
+
+  const side2 = side1.clone();
+  side2.position.x = building.position.x - w / 2 - 0.1;
+  side2.rotation.y = -Math.PI / 2;
+  scene.add(side2);
+  building.userData.windows.push(side2);
+}
+
+function buildGround() {
+  // Dark grid ground
+  const groundGeo = new THREE.PlaneGeometry(3000, 3000);
+  const groundMat = new THREE.MeshPhongMaterial({
+    color: 0x050a14,
+    emissive: 0x020408,
+    shininess: 20,
+  });
+  const ground = new THREE.Mesh(groundGeo, groundMat);
+  ground.rotation.x = -Math.PI / 2;
+  ground.position.y = 0;
+  scene.add(ground);
+
+  // Grid lines
+  const gridHelper = new THREE.GridHelper(3000, 100, 0x0a1a30, 0x0a1525);
+  gridHelper.position.y = 0.5;
+  scene.add(gridHelper);
+}
+
+function buildStars() {
+  const starGeo = new THREE.BufferGeometry();
+  const starCount = 2000;
+  const positions = new Float32Array(starCount * 3);
+  for (let i = 0; i < starCount; i++) {
+    positions[i * 3] = (Math.random() - 0.5) * 4000;
+    positions[i * 3 + 1] = 400 + Math.random() * 1500;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 4000;
+  }
+  starGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  const starMat = new THREE.PointsMaterial({ color: 0x667799, size: 2, sizeAttenuation: true });
+  const stars = new THREE.Points(starGeo, starMat);
+  scene.add(stars);
+}
+
+// ============================================================
+// AIRCRAFT
+// ============================================================
+
+function buildAircraft() {
+  const group = new THREE.Group();
+
+  // Fuselage
+  const bodyGeo = new THREE.BoxGeometry(3, 2, 12);
+  const bodyMat = new THREE.MeshPhongMaterial({ color: 0xcccccc, emissive: 0x222222 });
+  const body = new THREE.Mesh(bodyGeo, bodyMat);
+  group.add(body);
+
+  // Wings
+  const wingGeo = new THREE.BoxGeometry(28, 0.5, 4);
+  const wingMat = new THREE.MeshPhongMaterial({ color: 0xdddddd, emissive: 0x222222 });
+  const wings = new THREE.Mesh(wingGeo, wingMat);
+  wings.position.y = 0.2;
+  wings.position.z = 1;
+  group.add(wings);
+
+  // Tail vertical
+  const tailVGeo = new THREE.BoxGeometry(0.5, 4, 3);
+  const tailV = new THREE.Mesh(tailVGeo, wingMat);
+  tailV.position.set(0, 2, -5);
+  group.add(tailV);
+
+  // Tail horizontal
+  const tailHGeo = new THREE.BoxGeometry(10, 0.4, 2);
+  const tailH = new THREE.Mesh(tailHGeo, wingMat);
+  tailH.position.set(0, 0.5, -5.5);
+  group.add(tailH);
+
+  // Wing tips (nav lights)
+  const tipGeoR = new THREE.SphereGeometry(0.6, 6, 6);
+  const tipMatR = new THREE.MeshBasicMaterial({ color: 0xff3366 });
+  const tipR = new THREE.Mesh(tipGeoR, tipMatR);
+  tipR.position.set(14, 0.3, 1);
+  group.add(tipR);
+
+  const tipMatL = new THREE.MeshBasicMaterial({ color: 0x33ff66 });
+  const tipL = new THREE.Mesh(tipGeoR, tipMatL);
+  tipL.position.set(-14, 0.3, 1);
+  group.add(tipL);
+
+  // Engine glow
+  const engineGeo = new THREE.CylinderGeometry(0.8, 1.2, 3, 8);
+  const engineMat = new THREE.MeshBasicMaterial({ color: 0xffcc44, transparent: true, opacity: 0.6 });
+  const engine = new THREE.Mesh(engineGeo, engineMat);
+  engine.rotation.x = Math.PI / 2;
+  engine.position.z = -7;
+  group.add(engine);
+
+  group.position.set(0, 300, 0);
+  group.visible = false;
+  scene.add(group);
+  aircraft.mesh = group;
+}
+
+// ============================================================
+// GAME MODES
+// ============================================================
+
+function startGame(mode) {
+  gameMode = mode;
+  document.getElementById('landing').style.display = 'none';
+  document.getElementById('back-btn').style.display = 'block';
+
+  if (mode === 'fly') {
+    startFlyMode();
+  } else {
+    startExploreMode();
+  }
+}
+
+function startFlyMode() {
+  aircraft.mesh.visible = true;
+  aircraft.mesh.position.set(0, 300, -600);
+  aircraft.altitude = 300;
+  aircraft.targetAltitude = 300;
+  aircraft.speed = 60;
+  aircraft.yaw = 0;
+  aircraft.pitch = 0;
+  aircraft.roll = 0;
+  destroyed = 0;
+  missileReady = true;
+  missileCooldown = 0;
+
+  document.getElementById('hud').style.display = 'block';
+  document.getElementById('crosshair').style.display = 'block';
+  if (isMobile) {
+    document.getElementById('mobile-controls').style.display = 'flex';
+  }
+  document.getElementById('info-panel').style.display = 'none';
+  document.getElementById('minimap').style.display = 'block';
+}
+
+function startExploreMode() {
+  aircraft.mesh.visible = false;
+  orbitAngle = 0;
+  orbitRadius = 800;
+  orbitHeight = 400;
+
+  document.getElementById('hud').style.display = 'none';
+  document.getElementById('crosshair').style.display = 'none';
+  document.getElementById('mobile-controls').style.display = 'none';
+  document.getElementById('info-panel').style.display = 'block';
+  document.getElementById('minimap').style.display = 'none';
+}
+
+function backToLanding() {
+  gameMode = null;
+  aircraft.mesh.visible = false;
+  document.getElementById('landing').style.display = 'flex';
+  document.getElementById('hud').style.display = 'none';
+  document.getElementById('crosshair').style.display = 'none';
+  document.getElementById('mobile-controls').style.display = 'none';
+  document.getElementById('back-btn').style.display = 'none';
+  document.getElementById('info-panel').style.display = 'none';
+  document.getElementById('minimap').style.display = 'none';
+
+  // Reset selection
+  if (selectedBuilding) {
+    selectedBuilding.material.emissive.setHex(0x0a1a3a);
+    selectedBuilding = null;
+  }
+}
+
+// ============================================================
+// MOBILE CONTROLS
+// ============================================================
+
+function setupMobileControls() {
+  const joystickZone = document.getElementById('joystick-zone');
+  const thumb = document.getElementById('joystick-thumb');
+  const base = document.getElementById('joystick-base');
+
+  let touchId = null;
+  const baseRect = () => base.getBoundingClientRect();
+
+  joystickZone.addEventListener('touchstart', e => {
+    e.preventDefault();
+    const t = e.changedTouches[0];
+    touchId = t.identifier;
+    joystickActive = true;
+    updateJoystick(t);
+  }, { passive: false });
+
+  joystickZone.addEventListener('touchmove', e => {
+    e.preventDefault();
+    for (let t of e.changedTouches) {
+      if (t.identifier === touchId) updateJoystick(t);
+    }
+  }, { passive: false });
+
+  joystickZone.addEventListener('touchend', e => {
+    for (let t of e.changedTouches) {
+      if (t.identifier === touchId) {
+        joystickActive = false;
+        joystickX = 0; joystickY = 0;
+        thumb.style.transform = 'translate(-50%, -50%)';
+        touchId = null;
+      }
+    }
+  });
+
+  function updateJoystick(touch) {
+    const rect = baseRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    let dx = touch.clientX - cx;
+    let dy = touch.clientY - cy;
+    const maxR = rect.width / 2 - 25;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist > maxR) { dx = dx / dist * maxR; dy = dy / dist * maxR; }
+    joystickX = dx / maxR;
+    joystickY = dy / maxR;
+    thumb.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+  }
+
+  // Altitude buttons
+  const btnUp = document.getElementById('btn-up');
+  const btnDown = document.getElementById('btn-down');
+  const btnFire = document.getElementById('btn-fire');
+  const btnMissile = document.getElementById('btn-missile');
+
+  btnUp.addEventListener('touchstart', e => { e.preventDefault(); altUp = true; }, { passive: false });
+  btnUp.addEventListener('touchend', () => altUp = false);
+  btnDown.addEventListener('touchstart', e => { e.preventDefault(); altDown = true; }, { passive: false });
+  btnDown.addEventListener('touchend', () => altDown = false);
+  btnFire.addEventListener('touchstart', e => { e.preventDefault(); firing = true; }, { passive: false });
+  btnFire.addEventListener('touchend', () => firing = false);
+  btnMissile.addEventListener('touchstart', e => { e.preventDefault(); fireMissile(); }, { passive: false });
+}
+
+// ============================================================
+// WEAPONS
+// ============================================================
+
+function fireBullet() {
+  if (!aircraft.mesh) return;
+  const dir = new THREE.Vector3(0, 0, 1);
+  dir.applyQuaternion(aircraft.mesh.quaternion);
+
+  const geo = new THREE.SphereGeometry(0.5, 4, 4);
+  const mat = new THREE.MeshBasicMaterial({ color: 0xffff44 });
+  const bullet = new THREE.Mesh(geo, mat);
+  bullet.position.copy(aircraft.mesh.position);
+  bullet.position.add(dir.clone().multiplyScalar(8));
+  bullet.userData = { dir: dir.clone(), life: 2.0, speed: 400 };
+  scene.add(bullet);
+  bullets.push(bullet);
+}
+
+function fireMissile() {
+  if (!missileReady || !aircraft.mesh) return;
+  missileReady = false;
+  missileCooldown = 3.0;
+
+  const dir = new THREE.Vector3(0, -0.15, 1);
+  dir.applyQuaternion(aircraft.mesh.quaternion);
+  dir.normalize();
+
+  const geo = new THREE.CylinderGeometry(0.3, 0.6, 4, 6);
+  const mat = new THREE.MeshBasicMaterial({ color: 0xff6600 });
+  const missile = new THREE.Mesh(geo, mat);
+  missile.position.copy(aircraft.mesh.position);
+  missile.rotation.x = Math.PI / 2;
+  missile.userData = { dir: dir.clone(), life: 4.0, speed: 200 };
+  scene.add(missile);
+  missiles.push(missile);
+
+  document.getElementById('hud-missile').textContent = 'WAIT';
+  document.getElementById('hud-missile').className = 'hud-value red';
+  if (isMobile) document.getElementById('btn-missile').classList.add('cooldown');
+}
+
+function createExplosion(pos, size) {
+  // Particle explosion
+  const count = 30;
+  const group = new THREE.Group();
+  for (let i = 0; i < count; i++) {
+    const geo = new THREE.SphereGeometry(Math.random() * size * 0.3 + 0.5, 4, 4);
+    const hue = Math.random() > 0.5 ? 0xff6600 : 0xffcc00;
+    const mat = new THREE.MeshBasicMaterial({ color: hue, transparent: true, opacity: 1 });
+    const p = new THREE.Mesh(geo, mat);
+    p.position.copy(pos);
+    const vel = new THREE.Vector3(
+      (Math.random() - 0.5) * size * 2,
+      Math.random() * size * 2,
+      (Math.random() - 0.5) * size * 2
+    );
+    p.userData = { vel, life: 0.5 + Math.random() * 0.5 };
+    group.add(p);
+  }
+  scene.add(group);
+  explosions.push(group);
+
+  // Point light flash
+  const light = new THREE.PointLight(0xff8800, 3, size * 10);
+  light.position.copy(pos);
+  scene.add(light);
+  setTimeout(() => scene.remove(light), 200);
+
+  // Screen flash
+  const flash = document.createElement('div');
+  flash.className = 'explosion-flash';
+  document.body.appendChild(flash);
+  setTimeout(() => flash.remove(), 300);
+}
+
+function destroyBuilding(building) {
+  if (building.userData.destroyed) return;
+  building.userData.destroyed = true;
+  destroyed++;
+
+  createExplosion(building.position.clone(), building.userData.originalHeight * 0.15);
+
+  // Shrink building to rubble
+  const targetScale = 0.1;
+  const shrink = () => {
+    if (building.scale.y > targetScale) {
+      building.scale.y *= 0.85;
+      building.position.y = (building.userData.originalHeight * building.scale.y) / 2;
+      building.material.color.setHex(0x1a0a0a);
+      building.material.emissive.setHex(0x330000);
+      // Also adjust windows
+      if (building.userData.windows) {
+        building.userData.windows.forEach(w => {
+          w.scale.y = building.scale.y;
+          w.position.y = building.position.y;
+          w.material.opacity *= 0.85;
+        });
+      }
+      requestAnimationFrame(shrink);
+    }
+  };
+  shrink();
+}
+
+// ============================================================
+// EXPLORE MODE CLICK
+// ============================================================
+
+function onClickExplore(event) {
+  if (gameMode !== 'explore') return;
+
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+  raycaster.setFromCamera(mouse, camera);
+  const hits = raycaster.intersectObjects(buildings);
+
+  // Deselect previous
+  if (selectedBuilding) {
+    selectedBuilding.material.emissive.setHex(0x0a1a3a);
+  }
+
+  if (hits.length > 0) {
+    const bld = hits[0].object;
+    if (bld.userData.isBuilding) {
+      selectedBuilding = bld;
+      bld.material.emissive.setHex(0x1a3a6a);
+
+      const d = bld.userData;
+      document.getElementById('info-title').textContent = d.name;
+      document.getElementById('info-stats').innerHTML = `
+        <div class="stat"><span class="stat-label">Height</span><span class="stat-value">${d.height}m</span></div>
+        <div class="stat"><span class="stat-label">Threat Level</span><span class="stat-value" style="color:${threatColors[d.threat]}">${d.threat}</span></div>
+        <div class="stat"><span class="stat-label">Traffic</span><span class="stat-value">${d.traffic.toLocaleString()} req/s</span></div>
+        <div class="stat"><span class="stat-label">Alerts</span><span class="stat-value">${d.alerts}</span></div>
+        <div class="stat"><span class="stat-label">Uptime</span><span class="stat-value">${d.uptime}</span></div>
+        <div class="stat"><span class="stat-label">Status</span><span class="stat-value" style="color:#44ff88">${d.destroyed ? 'OFFLINE' : 'ONLINE'}</span></div>
+      `;
+    }
+  }
+}
+
+// ============================================================
+// MINIMAP
+// ============================================================
+
+function updateMinimap() {
+  const canvas = document.getElementById('minimap-canvas');
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#050a14';
+  ctx.fillRect(0, 0, 120, 120);
+
+  const scale = 120 / 2400;
+  const ox = 60, oy = 60;
+
+  // Draw buildings as dots
+  ctx.fillStyle = '#1a3a5a';
+  for (const b of buildings) {
+    if (b.userData.destroyed) continue;
+    const x = ox + b.position.x * scale;
+    const y = oy + b.position.z * scale;
+    ctx.fillRect(x - 0.5, y - 0.5, 1, 1);
+  }
+
+  // Draw aircraft
+  if (aircraft.mesh && aircraft.mesh.visible) {
+    ctx.fillStyle = '#ff4444';
+    const ax = ox + aircraft.mesh.position.x * scale;
+    const ay = oy + aircraft.mesh.position.z * scale;
+    ctx.beginPath();
+    ctx.arc(ax, ay, 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Direction indicator
+    const dir = new THREE.Vector3(0, 0, 1);
+    dir.applyQuaternion(aircraft.mesh.quaternion);
+    ctx.strokeStyle = '#ff4444';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(ax, ay);
+    ctx.lineTo(ax + dir.x * 10, ay + dir.z * 10);
+    ctx.stroke();
+  }
+}
+
+// ============================================================
+// UPDATE LOOP
+// ============================================================
+
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.05);
+
+  if (gameMode === 'fly') {
+    updateFly(dt);
+    updateProjectiles(dt);
+    updateExplosions(dt);
+    updateMinimap();
+    updateHUD();
+  } else if (gameMode === 'explore') {
+    updateExplore(dt);
+  }
+
+  renderer.render(scene, camera);
+}
+
+function updateFly(dt) {
+  const mesh = aircraft.mesh;
+
+  // Input from keyboard or joystick
+  let inputX = 0, inputY = 0;
+
+  if (joystickActive) {
+    inputX = joystickX;
+    inputY = joystickY;
+  }
+  if (keys['KeyA'] || keys['ArrowLeft']) inputX -= 1;
+  if (keys['KeyD'] || keys['ArrowRight']) inputX += 1;
+  if (keys['KeyW'] || keys['ArrowUp']) inputY -= 1;
+  if (keys['KeyS'] || keys['ArrowDown']) inputY += 1;
+
+  // Altitude
+  if (keys['Space'] || altUp) aircraft.targetAltitude += 100 * dt;
+  if (keys['ShiftLeft'] || altDown) aircraft.targetAltitude -= 100 * dt;
+  aircraft.targetAltitude = Math.max(30, Math.min(800, aircraft.targetAltitude));
+  aircraft.altitude += (aircraft.targetAltitude - aircraft.altitude) * 2 * dt;
+
+  // Speed control
+  if (keys['KeyE']) aircraft.speed = Math.min(aircraft.maxSpeed, aircraft.speed + 30 * dt);
+  if (keys['KeyQ']) aircraft.speed = Math.max(aircraft.minSpeed, aircraft.speed - 30 * dt);
+
+  // Yaw (turning)
+  aircraft.yaw -= inputX * 1.5 * dt;
+
+  // Pitch
+  aircraft.pitch += inputY * 0.8 * dt;
+  aircraft.pitch *= 0.95; // damping
+
+  // Roll from turning
+  const targetRoll = -inputX * 0.6;
+  aircraft.roll += (targetRoll - aircraft.roll) * 3 * dt;
+
+  // Move forward
+  const forward = new THREE.Vector3(0, 0, 1);
+  const quat = new THREE.Quaternion();
+  quat.setFromEuler(new THREE.Euler(aircraft.pitch, aircraft.yaw, aircraft.roll, 'YXZ'));
+  forward.applyQuaternion(quat);
+
+  mesh.position.x += forward.x * aircraft.speed * dt;
+  mesh.position.z += forward.z * aircraft.speed * dt;
+  mesh.position.y = aircraft.altitude;
+
+  mesh.quaternion.copy(quat);
+
+  // Camera: chase cam behind aircraft
+  const camOffset = new THREE.Vector3(0, 8, -30);
+  camOffset.applyQuaternion(quat);
+  camera.position.lerp(mesh.position.clone().add(camOffset), 5 * dt);
+
+  const lookAt = mesh.position.clone().add(forward.multiplyScalar(50));
+  camera.lookAt(lookAt);
+
+  // Firing
+  if (keys['KeyF'] || firing) {
+    fireTimer += dt;
+    if (fireTimer >= 0.08) {
+      fireBullet();
+      fireTimer = 0;
+    }
+  } else {
+    fireTimer = 0.08; // ready to fire immediately
+  }
+
+  // Missile keyboard
+  if (keys['KeyR']) fireMissile();
+
+  // Missile cooldown
+  if (!missileReady) {
+    missileCooldown -= dt;
+    if (missileCooldown <= 0) {
+      missileReady = true;
+      document.getElementById('hud-missile').textContent = 'READY';
+      document.getElementById('hud-missile').className = 'hud-value green';
+      if (isMobile) document.getElementById('btn-missile').classList.remove('cooldown');
+    }
+  }
+
+  // Wrap around city
+  if (mesh.position.x > 1500) mesh.position.x = -1500;
+  if (mesh.position.x < -1500) mesh.position.x = 1500;
+  if (mesh.position.z > 1500) mesh.position.z = -1500;
+  if (mesh.position.z < -1500) mesh.position.z = 1500;
+}
+
+function updateProjectiles(dt) {
+  // Bullets
+  for (let i = bullets.length - 1; i >= 0; i--) {
+    const b = bullets[i];
+    b.userData.life -= dt;
+    if (b.userData.life <= 0) {
+      scene.remove(b);
+      bullets.splice(i, 1);
+      continue;
+    }
+    b.position.add(b.userData.dir.clone().multiplyScalar(b.userData.speed * dt));
+
+    // Collision with buildings
+    for (const bld of buildings) {
+      if (bld.userData.destroyed) continue;
+      const dx = b.position.x - bld.position.x;
+      const dz = b.position.z - bld.position.z;
+      const dist = Math.sqrt(dx * dx + dz * dz);
+      if (dist < 15 && b.position.y < bld.userData.originalHeight && b.position.y > 0) {
+        destroyBuilding(bld);
+        scene.remove(b);
+        bullets.splice(i, 1);
+        break;
+      }
+    }
+  }
+
+  // Missiles
+  for (let i = missiles.length - 1; i >= 0; i--) {
+    const m = missiles[i];
+    m.userData.life -= dt;
+    if (m.userData.life <= 0) {
+      scene.remove(m);
+      missiles.splice(i, 1);
+      continue;
+    }
+    m.position.add(m.userData.dir.clone().multiplyScalar(m.userData.speed * dt));
+    m.userData.speed += 200 * dt; // accelerate
+
+    // Trail
+    if (Math.random() > 0.5) {
+      const trailGeo = new THREE.SphereGeometry(0.3, 3, 3);
+      const trailMat = new THREE.MeshBasicMaterial({ color: 0xff8800, transparent: true, opacity: 0.5 });
+      const trail = new THREE.Mesh(trailGeo, trailMat);
+      trail.position.copy(m.position);
+      scene.add(trail);
+      setTimeout(() => scene.remove(trail), 200);
+    }
+
+    // Collision with buildings (bigger blast radius)
+    for (const bld of buildings) {
+      if (bld.userData.destroyed) continue;
+      const dx = m.position.x - bld.position.x;
+      const dz = m.position.z - bld.position.z;
+      const dist = Math.sqrt(dx * dx + dz * dz);
+      if (dist < 30 && m.position.y < bld.userData.originalHeight + 20 && m.position.y > -5) {
+        // Destroy this and nearby buildings
+        destroyBuilding(bld);
+        // Splash damage
+        for (const nb of buildings) {
+          if (nb.userData.destroyed) continue;
+          const ndx = m.position.x - nb.position.x;
+          const ndz = m.position.z - nb.position.z;
+          if (Math.sqrt(ndx * ndx + ndz * ndz) < 50) {
+            destroyBuilding(nb);
+          }
+        }
+        scene.remove(m);
+        missiles.splice(i, 1);
+        break;
+      }
+    }
+
+    // Ground hit
+    if (m.position.y <= 0) {
+      createExplosion(m.position.clone(), 5);
+      // Splash damage
+      for (const bld of buildings) {
+        if (bld.userData.destroyed) continue;
+        const dx = m.position.x - bld.position.x;
+        const dz = m.position.z - bld.position.z;
+        if (Math.sqrt(dx * dx + dz * dz) < 60) {
+          destroyBuilding(bld);
+        }
+      }
+      scene.remove(m);
+      missiles.splice(i, 1);
+    }
+  }
+}
+
+function updateExplosions(dt) {
+  for (let i = explosions.length - 1; i >= 0; i--) {
+    const group = explosions[i];
+    let allDead = true;
+    for (const p of group.children) {
+      p.userData.life -= dt;
+      if (p.userData.life > 0) {
+        allDead = false;
+        p.position.add(p.userData.vel.clone().multiplyScalar(dt));
+        p.userData.vel.y -= 20 * dt; // gravity
+        p.material.opacity = Math.max(0, p.userData.life);
+        p.scale.multiplyScalar(0.97);
+      } else {
+        p.visible = false;
+      }
+    }
+    if (allDead) {
+      scene.remove(group);
+      explosions.splice(i, 1);
+    }
+  }
+}
+
+function updateHUD() {
+  document.getElementById('hud-speed').textContent = Math.round(aircraft.speed);
+  document.getElementById('hud-alt').textContent = Math.round(aircraft.altitude);
+  document.getElementById('hud-destroyed').textContent = destroyed;
+}
+
+function updateExplore(dt) {
+  // Auto-orbit
+  orbitAngle += 0.15 * dt;
+
+  // Mouse wheel zoom
+  if (keys['Equal'] || keys['NumpadAdd']) orbitRadius = Math.max(200, orbitRadius - 200 * dt);
+  if (keys['Minus'] || keys['NumpadSubtract']) orbitRadius = Math.min(1500, orbitRadius + 200 * dt);
+
+  camera.position.x = Math.cos(orbitAngle) * orbitRadius;
+  camera.position.z = Math.sin(orbitAngle) * orbitRadius;
+  camera.position.y = orbitHeight;
+  camera.lookAt(0, 100, 0);
+}
+
+// ============================================================
+// EVENTS
+// ============================================================
+
+function onResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+// Scroll wheel for explore zoom
+window.addEventListener('wheel', e => {
+  if (gameMode === 'explore') {
+    orbitRadius += e.deltaY * 0.5;
+    orbitRadius = Math.max(200, Math.min(1500, orbitRadius));
+    orbitHeight += e.deltaY * 0.2;
+    orbitHeight = Math.max(100, Math.min(800, orbitHeight));
+  }
+});
+
+// Prevent touch scroll
+document.addEventListener('touchmove', e => {
+  if (gameMode) e.preventDefault();
+}, { passive: false });
+
+// ============================================================
+// BOOT
+// ============================================================
+
+init();
+</script>
+</body>
+</html>
