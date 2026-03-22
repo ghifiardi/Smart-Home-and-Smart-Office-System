@@ -26,6 +26,11 @@ Thumbs.db
 # Logs
 *.log
 
+# Node
+node_modules/
+package-lock.json
+package.json
+
 # AI Personal Assistant specific
 ai_personal_assistant/config/config.json
 ai_personal_assistant/credentials.json
