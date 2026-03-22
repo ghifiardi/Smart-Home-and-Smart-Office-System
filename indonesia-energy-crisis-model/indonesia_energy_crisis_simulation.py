@@ -193,6 +193,20 @@ CRISIS_SCENARIOS = [
         trigger="Policy-driven coal retirement without adequate replacement",
         probability_annual=0.30,
     ),
+    CrisisScenario(
+        name="crude_oil_supply_disruption",
+        description="Global crude oil price shock (2-3x) or import disruption. Indonesia imports ~40% "
+                    "of crude oil needs. Oil-fired generation (2.4%) becomes uneconomic, transport fuel "
+                    "costs spike increasing logistics costs for coal/gas delivery, and industrial demand "
+                    "shifts to grid electricity.",
+        severity=0.55,
+        duration_days=120,
+        supply_reduction_pct=0.15,
+        demand_increase_pct=0.10,
+        affected_zones=["Java-Bali", "Sumatra", "Kalimantan", "Sulawesi", "Papua-NTT"],
+        trigger="Geopolitical conflict / OPEC supply cut / Strait of Malacca disruption",
+        probability_annual=0.12,
+    ),
 ]
 
 
@@ -329,6 +343,11 @@ class IndonesiaEnergyCrisisSimulation:
             if is_crisis and "gas" in scenario.name:
                 mix["natural_gas"] *= (1 - scenario.supply_reduction_pct)
                 mix["coal"] += mix["natural_gas"] * scenario.supply_reduction_pct * 0.5
+            if is_crisis and "oil" in scenario.name:
+                mix["oil"] *= (1 - scenario.supply_reduction_pct)
+                # Oil disruption also impacts gas/coal delivery logistics
+                mix["natural_gas"] *= (1 - scenario.supply_reduction_pct * 0.2)
+                mix["coal"] *= (1 - scenario.supply_reduction_pct * 0.1)
 
             # Normalize mix
             total_mix = sum(mix.values())
@@ -551,7 +570,7 @@ def main():
     sim.compare_smart_adoption(heat_wave)
 
     # Export results
-    export_path = "/home/user/Smart-Home-and-Smart-Office-System/indonesia-energy-crisis-model/simulation_results.json"
+    export_path = "/tmp/smart-home-repo/indonesia-energy-crisis-model/simulation_results.json"
     data = sim.export_json(export_path)
 
     # Print key insights

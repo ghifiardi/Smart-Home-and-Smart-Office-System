@@ -215,6 +215,7 @@ const SCENARIOS = [
     { id: "grid_cascade_failure", name: "Grid Cascade Failure", severity: 0.9, days: 7, supplyDrop: 0.60, demandUp: 0.0, zones: ["Java-Bali"], prob: 0.05, desc: "Cascading grid failure on Java-Bali affecting 150M+ people.", color: "#dc2626" },
     { id: "natural_gas_price_shock", name: "Gas Price Shock", severity: 0.5, days: 180, supplyDrop: 0.12, demandUp: 0.0, zones: ["Java-Bali","Sumatra","Kalimantan","Sulawesi"], prob: 0.20, desc: "Global LNG price spike makes gas generation uneconomic.", color: "#8b5cf6" },
     { id: "renewable_transition_gap", name: "Renewable Transition Gap", severity: 0.4, days: 365, supplyDrop: 0.08, demandUp: 0.05, zones: ["Java-Bali","Sumatra","Sulawesi","Kalimantan","Papua-NTT"], prob: 0.30, desc: "Coal retirements outpace renewable buildout. Structural shortfall.", color: "#06b6d4" },
+    { id: "crude_oil_supply_disruption", name: "Crude Oil Disruption", severity: 0.55, days: 120, supplyDrop: 0.15, demandUp: 0.10, zones: ["Java-Bali","Sumatra","Kalimantan","Sulawesi","Papua-NTT"], prob: 0.12, desc: "Global crude oil price shock or import disruption. Transport costs spike, oil-fired generation drops, industrial demand shifts to grid.", color: "#b45309" },
 ];
 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
