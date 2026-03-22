@@ -39,41 +39,46 @@ from typing import List, Dict, Optional
 
 
 # ---------------------------------------------------------------------------
-# Indonesia Energy Constants — sourced from real public data (2024-2025)
+# Indonesia Energy Constants — sourced from real public data (2025-2026)
 # ---------------------------------------------------------------------------
 
-# PLN Statistics 2024: total installed capacity 100.6 GW, peak load 61.3 GW
-# NRE capacity 14.3 GW (14.21% of total)
-INDONESIA_INSTALLED_CAPACITY_GW = 101.0          # PLN 2024 actual
-INDONESIA_PEAK_DEMAND_GW = 61.3                  # PLN 2024 actual peak load
+# PLN Statistics 2024: 100.6 GW installed, 61.3 GW peak load
+# RUPTL 2025-2034: +5.6 GW/yr → ~107 GW est. end-2025, ~112 GW est. mid-2026
+# Solar capacity reached 1.49 GW (PV Magazine, Feb 2026)
+INDONESIA_INSTALLED_CAPACITY_GW = 107.0          # Est. end-2025 (101 + ~5.6 GW added)
+INDONESIA_PEAK_DEMAND_GW = 64.2                  # Est. 2025 (61.3 GW × 1.047 growth)
 RESERVE_MARGIN_TARGET = 0.30                     # 30% PLN target
 
-# BPS Statistics Indonesia 2025
-POPULATION = 285_700_000                         # 2025 estimate
+# BPS/Worldometer mid-2026 projection
+POPULATION = 287_900_000                         # 287.9M (Worldometer mid-2026)
 URBAN_POPULATION_RATIO = 0.58                    # ~58% urban
 
 # PLN electrification data
-ELECTRIFICATION_RATIO = 0.9972                   # ~99.7% (2024)
+ELECTRIFICATION_RATIO = 0.9975                   # ~99.75% (est. 2025)
 
-# PLN average tariff: IDR 1,153/kWh all-customer average (2024)
-# Generation cost ~IDR 1,732/kWh, gap covered by government subsidy
-AVERAGE_TARIFF_IDR_KWH = 1_153                   # Rp/kWh blended (PLN 2024)
+# PLN tariffs: unchanged Q1 2026 (ESDM Regulation No. 7/2024)
+# Residential (non-subsidized R1 1,300-2,200 VA): Rp 1,444.70/kWh
+# Business B1 (450-5,500 VA): Rp 1,100/kWh
+# PLN all-customer blended average: ~Rp 1,153/kWh (2024 actual)
+# Electricity subsidy budget 2026: Rp 101.72T
+AVERAGE_TARIFF_IDR_KWH = 1_444                   # Rp/kWh non-subsidized residential
 
-# Electricity generation mix (ESDM 2024, Deputy Minister Yuliot Tanjung)
-# Coal ~67%, Gas ~17.7%, Hydro ~6.9%, Geothermal ~5.3%, Oil/BBN ~3.1%,
-# Biomass ~1%, Solar/Wind ~0.25%, Other ~0.75% (adjusted to sum to 1.0)
+# Electricity generation mix (ESDM 2024-2025)
+# Coal still ~67-68% of electricity (IEEFA 2026, ESDM)
+# NRE on-grid: 11.5% (2024 actual), RUPTL target 15.9% for 2025
+# Actual NRE realization: 14.4-15.75% (Oct 2025, ESDM)
 ENERGY_MIX = {
-    "coal": 0.670,          # 67.0% — dominant (ESDM Aug 2024)
-    "natural_gas": 0.177,   # 17.7% (ESDM target 2024)
+    "coal": 0.670,          # 67-68% — dominant (ESDM 2024, IEEFA 2026)
+    "natural_gas": 0.177,   # 17.7% (ESDM 2024)
     "oil": 0.031,           # 3.1% fuel & BBN (ESDM 2024)
     "hydro": 0.069,         # 6.9% (ESDM 2024)
     "geothermal": 0.053,    # 5.3% (ESDM 2024)
-    "solar_wind": 0.003,    # 0.3% — solar 1.49 GW total capacity (2025)
+    "solar_wind": 0.003,    # 0.3% — solar 1.49 GW capacity (PV Magazine Feb 2026)
     "biomass": 0.010,       # 1.0% (ESDM 2024)
     "other_re": 0.007,      # 0.7% (remaining NRE)
 }
-# NRE share of electricity: ~15.75% as of 2025 (ESDM announcement)
-# Revised national target: 17-19% NRE (down from 23% KEN 2014 target)
+# NRE share target missed 9 consecutive years (IESR 2026 Outlook)
+# Revised target: 23% pushed to 2030 (was 2025 under KEN 2014)
 
 # Priority cities — population from BPS, GDP estimated from provincial GRDP
 PRIORITY_CITIES = {
@@ -85,29 +90,30 @@ PRIORITY_CITIES = {
     "Makassar":  {"population_m": 1.5,   "gdp_b_usd": 15,  "grid_zone": "Sulawesi",  "efficiency_adoption": 0.02},
 }
 
-# Grid zones — capacity proportional to PLN 2024 (101 GW total)
+# Grid zones — capacity proportional to PLN (est. 107 GW by end-2025)
 # Java-Bali ~60%, Sumatra ~15%, Kalimantan ~8%, Sulawesi ~7%, Eastern ~5%
-# Demand shares from IEA/Ember analysis: Java-Bali 60%, Sumatra 16%, rest 24%
 GRID_ZONES = {
-    "Java-Bali":  {"capacity_gw": 61.0, "demand_gw": 40.0, "interconnected": True},
-    "Sumatra":    {"capacity_gw": 15.0, "demand_gw": 10.0, "interconnected": True},
-    "Kalimantan": {"capacity_gw": 8.0,  "demand_gw": 5.0,  "interconnected": False},
-    "Sulawesi":   {"capacity_gw": 7.0,  "demand_gw": 4.0,  "interconnected": False},
-    "Papua-NTT":  {"capacity_gw": 5.0,  "demand_gw": 2.3,  "interconnected": False},
+    "Java-Bali":  {"capacity_gw": 64.0, "demand_gw": 42.0, "interconnected": True},
+    "Sumatra":    {"capacity_gw": 16.0, "demand_gw": 10.5, "interconnected": True},
+    "Kalimantan": {"capacity_gw": 8.5,  "demand_gw": 5.2,  "interconnected": False},
+    "Sulawesi":   {"capacity_gw": 7.5,  "demand_gw": 4.2,  "interconnected": False},
+    "Papua-NTT":  {"capacity_gw": 5.5,  "demand_gw": 2.4,  "interconnected": False},
 }
 
-# Crude oil / fuel subsidy constants (2024-2025 actuals)
-# EIA: Indonesia consumed 1.63M bbl/day in 2024
-# EIA: crude imports 354K bbl/day + product imports 791K bbl/day = 1.145M bbl/day total
-# EIA: domestic production 580K-868K bbl/day (2024)
-CRUDE_OIL_BASELINE_USD_BBL = 75.0       # Brent 2024-2025 average
-FUEL_SUBSIDY_BUDGET_B_IDR = 203_400     # Rp 203.4T energy subsidy in 2025 State Budget
-BBM_CONSUMPTION_MBPD = 1.63             # 1.63M bbl/day oil consumption (EIA 2024)
-NET_OIL_IMPORT_MBPD = 1.145             # crude 354K + products 791K bbl/day (EIA 2024)
-IDR_PER_USD = 16_000                    # approximate exchange rate (2024-2025)
-INDONESIA_GDP_B_USD = 1_400             # IMF 2024: $1.4T nominal GDP
+# Crude oil / fuel subsidy constants (2025-2026)
+# Oil consumption ~1.7M bbl/day, production ~608K bbl/day (IPA 2025)
+# 2026 state budget ICP assumption: $70/bbl
+# Every $1/bbl increase → Rp 7T extra fiscal impact (ESI estimate)
+# Fuel reserve: only 21-23 days (Energy Council 2025)
+CRUDE_OIL_BASELINE_USD_BBL = 70.0       # 2026 state budget ICP assumption
+FUEL_SUBSIDY_BUDGET_B_IDR = 101_720     # Rp 101.72T electricity subsidy 2026
+BBM_CONSUMPTION_MBPD = 1.70             # ~1.7M bbl/day consumption (2025)
+NET_OIL_IMPORT_MBPD = 1.10              # ~1.1M bbl/day net imports (production ~600K)
+IDR_PER_USD = 16_975                    # March 2026 rate (BI)
+INDONESIA_GDP_B_USD = 1_510             # Est. 2026 ($1.44T × 1.051 growth)
 TRANSPORT_SHARE_OF_GDP = 0.05           # transport ~5% of GDP
 FUEL_SHARE_OF_CPI = 0.08               # fuel ~8% weight in CPI basket
+INFLATION_CURRENT_PCT = 4.76            # Feb 2026 CPI (near 3-year high)
 
 # Energy efficiency potential (general estimates, not platform-specific)
 EFFICIENCY_POTENTIAL = {
@@ -186,7 +192,7 @@ CRISIS_SCENARIOS = [
     CrisisScenario(
         name="coal_supply_disruption",
         description="Major coal supply disruption due to export ban reversal, mining accidents, or logistics failure. "
-                    "Indonesia relies on coal for 67% of electricity generation (ESDM 2024). "
+                    "Coal is 67-68% of electricity (ESDM 2024-2025, IEEFA 2026). "
                     "Coal production 833 Mt in 2024 (EIA), exports 615 Mt.",
         severity=0.7,
         duration_days=90,
@@ -238,9 +244,9 @@ CRISIS_SCENARIOS = [
     CrisisScenario(
         name="crude_oil_price_shock",
         description="Global crude oil price spike (2x) due to Middle East conflict or OPEC+ cuts. "
-                    "Indonesia imports 1.145M bbl/day (EIA 2024: 354K crude + 791K products). "
-                    "2025 energy subsidy budget Rp 203.4T faces massive overrun. "
-                    "Oil-fired power plants (3.1% of mix) become extremely expensive.",
+                    "Indonesia imports ~1.1M bbl/day (production only ~608K bbl/day). "
+                    "2026 budget assumes ICP $70/bbl — every $1 increase = Rp 7T fiscal impact (ESI). "
+                    "Fuel reserve only 21-23 days (Energy Council). Inflation already 4.76% (Feb 2026).",
         severity=0.65,
         duration_days=180,
         supply_reduction_pct=0.03,       # oil-fired plants curtailed
@@ -248,7 +254,7 @@ CRISIS_SCENARIOS = [
         affected_zones=["Java-Bali", "Sumatra", "Kalimantan", "Sulawesi", "Papua-NTT"],
         trigger="Middle East conflict / OPEC+ production cuts / sanctions disruption",
         probability_annual=0.20,
-        oil_price_multiplier=2.0,        # price doubles from $75 to $150/bbl
+        oil_price_multiplier=2.0,        # price doubles from $70 to $140/bbl
         fuel_subsidy_overrun_pct=0.65,   # 65% budget overrun on fuel subsidies
         inflation_impact_pct=2.5,        # 2.5% additional CPI inflation
         transport_disruption_pct=0.15,   # 15% transport GDP loss
@@ -256,8 +262,10 @@ CRISIS_SCENARIOS = [
     CrisisScenario(
         name="renewable_transition_gap",
         description="Coal plant retirements outpace renewable + storage buildout. "
-                    "RUPTL 2025-2034 targets 42.6 GW NRE + 10.3 GW storage, but NRE share "
-                    "only 15.75% in 2025 vs revised 17-19% target. Structural shortfall at evening peak.",
+                    "RUPTL 2025-2034 targets 42.6 GW NRE + 10.3 GW storage. "
+                    "NRE target missed 9 consecutive years (IESR 2026). "
+                    "2025 NRE realization only 14.4% vs 15.9% RUPTL target. "
+                    "23% target pushed from 2025 to 2030.",
         severity=0.4,
         duration_days=365,
         supply_reduction_pct=0.08,
@@ -291,8 +299,8 @@ class IndonesiaEnergyCrisisSimulation:
         self.results: List[SimulationResult] = []
 
         # Demand growth ~4.7% per year (PLN RUPTL 2025-2034 / Ember projection)
-        # 306 TWh (2024) growing to 445 TWh (2030)
-        years_from_base = year - 2025
+        # 306 TWh (2024) → 445 TWh (2030), peak 61.3 GW (2024) → ~77 GW (2030)
+        years_from_base = year - 2026
         self.demand_growth = 1.047 ** years_from_base
 
         # RUPTL 2025-2030: 27.9 GW new capacity over 5 years ≈ 5.6 GW/year
@@ -703,28 +711,29 @@ def main():
     print("  KEY INSIGHTS — INDONESIA ENERGY CRISIS MODEL")
     print("=" * 70)
     print("""
-    1. COAL DEPENDENCY RISK: Indonesia's 67% coal reliance (ESDM 2024)
-       creates acute vulnerability. Coal production reached record 833 Mt
-       in 2024 (EIA). A 25% supply disruption causes cascading blackouts
-       across Java-Bali, where 61 GW serves 60% of national demand.
+    1. COAL DEPENDENCY RISK: Coal is 67-68% of electricity (ESDM/IEEFA).
+       Coal capacity alone is 80 GW of 120 GW total (on+off grid).
+       Production record 833 Mt in 2024 (EIA). A 25% supply disruption
+       causes cascading blackouts across Java-Bali (~64 GW, 60% of national).
 
     2. CLIMATE AMPLIFICATION: El Nino heatwaves simultaneously increase
        demand (+25% AC load) and reduce supply (-10% hydro). Java-Bali
-       has ~6 GW structural overcapacity but coal IPP PPA constraints
-       limit dispatch flexibility (IEA).
+       has structural overcapacity but coal IPP PPA constraints limit
+       dispatch flexibility (IEA). Data centers adding 1.44→3.56 GW by 2030.
 
-    3. CRUDE OIL VULNERABILITY: Indonesia imports 1.145M bbl/day
-       (EIA 2024: 354K crude + 791K products). Triple exposure:
-       - FISCAL: 2025 energy subsidy budget Rp 203.4T at risk of overrun
-       - INFLATION: 2-3% additional CPI from fuel price pass-through
-       - TRANSPORT: 15% transport GDP loss from higher fuel costs
-       - CURRENCY: Rupiah (Rp 16,000/USD) depreciation pressure
-       Oil-fired generation (3.1% of mix) also becomes uneconomic.
+    3. CRUDE OIL VULNERABILITY: Indonesia imports ~1.1M bbl/day
+       (production only ~608K bbl/day). 2026 state budget assumes
+       ICP $70/bbl — every $1 increase = Rp 7T fiscal impact (ESI).
+       - FISCAL: Electricity subsidy Rp 101.72T (2026 budget)
+       - INFLATION: Already 4.76% in Feb 2026 (near 3-year high)
+       - RESERVES: Fuel reserve only 21-23 days (Energy Council)
+       - CURRENCY: Rupiah at Rp 16,975/USD (Mar 2026), down -1.73% YTD
+       If oil averages $92/bbl, fiscal deficit widens to 3.6% of GDP.
 
     4. LNG PRICE SENSITIVITY: Gas is 17.7% of generation (ESDM 2024).
        Global LNG price spikes (3x) reduce gas-fired output 12%.
-       Coal capacity utilization already low at 48% (2023), limiting
-       ability to compensate quickly.
+       Coal capacity utilization already low at 48%, limiting ability
+       to compensate quickly.
 
     5. ENERGY EFFICIENCY POTENTIAL: Key demand-side measures include:
        - HVAC optimization (25% savings) — biggest single lever
@@ -733,21 +742,24 @@ def main():
        - Occupancy management (20% savings) — commercial buildings
        At 20% adoption, these can reduce peak demand by 2-4%.
 
-    6. RENEWABLE TRANSITION GAP: RUPTL 2025-2034 targets 42.6 GW NRE
-       + 10.3 GW storage (76% of 69.5 GW new capacity). But NRE share
-       only reached 15.75% in 2025 vs revised 17-19% target (down from
-       23% KEN 2014). The transition gap is the most probable crisis
-       scenario (30% annual probability).
+    6. RENEWABLE TRANSITION GAP: NRE target missed 9 consecutive years
+       (IESR Indonesia Energy Transition Outlook 2026). 2025 realization
+       only 14.4% vs 15.9% RUPTL target (Oct 2025, ESDM). 23% target
+       pushed from 2025 to 2030. RUPTL 2025-2034 plans 42.6 GW NRE +
+       10.3 GW storage, but still includes 16.6 GW new fossil capacity.
 
-    DATA SOURCES:
-    - PLN Statistics 2024 (capacity, demand, tariffs)
-    - ESDM Handbook of Energy & Economic Statistics 2023-2024
-    - EIA Country Analysis Brief: Indonesia (August 2025)
-    - RUPTL 2025-2034 (PLN Electricity Supply Business Plan)
-    - IEA: Enhancing Indonesia's Power System
-    - Ember: Indonesia RUKN 2025
-    - IMF World Economic Outlook (GDP)
-    - Ministry of Finance 2025 State Budget (subsidies)
+    DATA SOURCES (verified 2025-2026):
+    - PLN Statistics 2024 (capacity 101 GW, peak 61.3 GW)
+    - ESDM/Deputy Minister (coal 67%, generation mix)
+    - EIA Country Analysis Brief: Indonesia (Aug 2025)
+    - RUPTL 2025-2034 (69.5 GW new capacity plan)
+    - IEEFA: Can Indonesia Pivot in 2026? (Jan 2026)
+    - IESR: Indonesia Energy Transition Outlook 2026
+    - IMF Article IV Consultation (Jan 2026: GDP $1.44T, growth 5.1%)
+    - PV Magazine (Feb 2026: solar 1.49 GW)
+    - 2026 State Budget (ICP $70/bbl, electricity subsidy Rp 101.72T)
+    - Energy Council (fuel reserve 21-23 days)
+    - Bank Indonesia (Rupiah Rp 16,975/USD, Mar 2026)
     """)
 
     return data

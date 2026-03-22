@@ -94,10 +94,10 @@
         <h1>Indonesia Energy Crisis Model</h1>
         <p>Multi-Commodity Energy Supply-Demand Simulation — Coal, LNG, Crude Oil &amp; Renewables</p>
         <div style="margin-top:12px;">
-            <span class="badge badge-danger">101 GW Installed (PLN 2024)</span>
-            <span class="badge badge-warn">67% Coal Dependent (ESDM 2024)</span>
-            <span class="badge badge-info">Net Oil Importer 1.15M bbl/day</span>
-            <span class="badge badge-success">285.7M Population</span>
+            <span class="badge badge-danger">107 GW Installed (2025 est.)</span>
+            <span class="badge badge-warn">67-68% Coal (ESDM/IEEFA 2026)</span>
+            <span class="badge badge-info">Oil Imports ~1.1M bbl/day</span>
+            <span class="badge badge-success">288M Population (2026)</span>
         </div>
     </div>
 
@@ -189,44 +189,51 @@
     </div>
 
     <div class="footer">
-        Indonesia Energy Crisis Model v3.0 — Based on Real Public Data (2024-2025)<br>
-        <strong>Data Sources:</strong> PLN Statistics 2024 &bull; ESDM Energy Statistics 2024 &bull; EIA Country Analysis (Aug 2025) &bull;
-        RUPTL 2025-2034 &bull; IEA Indonesia Power System Report &bull; Ember RUKN 2025 &bull;
-        IMF World Economic Outlook &bull; Ministry of Finance 2025 Budget &bull; BPS Statistics Indonesia
+        Indonesia Energy Crisis Model v3.0 — Based on Real Public Data (2025-2026)<br>
+        <strong>Data Sources:</strong> PLN Statistics 2024 (101 GW, 61.3 GW peak) &bull;
+        ESDM 2024-2025 (67-68% coal) &bull; EIA Country Analysis Aug 2025 &bull;
+        RUPTL 2025-2034 (69.5 GW plan) &bull; IEEFA 2026 &bull; IESR Energy Transition Outlook 2026 &bull;
+        IMF Article IV Jan 2026 ($1.44T GDP, 5.1% growth) &bull; 2026 State Budget (ICP $70/bbl) &bull;
+        PV Magazine Feb 2026 (solar 1.49 GW) &bull; Bank Indonesia Mar 2026 (Rp 16,975/USD)
     </div>
 </div>
 
 <script>
 // =========================================================================
-// DATA & CONSTANTS — sourced from real public data (2024-2025)
-// PLN Statistics 2024, ESDM 2024, EIA 2025, RUPTL 2025-2034, IMF, BPS
+// DATA & CONSTANTS — sourced from real public data (2025-2026)
+// PLN 2024, ESDM 2024-2025, EIA Aug 2025, RUPTL 2025-2034,
+// IMF Jan 2026, IEEFA 2026, IESR 2026, 2026 State Budget
 // =========================================================================
-const CAPACITY_GW = 101.0;        // PLN 2024: 100.6 GW total installed
-const PEAK_DEMAND_GW = 61.3;      // PLN 2024: 61.3 GW peak load
-const TARIFF_BASE = 1153;         // PLN 2024: IDR 1,153/kWh average (all customers)
-const INDONESIA_GDP_B = 1400;     // IMF 2024: $1.4T nominal GDP
+const CAPACITY_GW = 107.0;        // Est. end-2025 (PLN 2024: 101 GW + ~5.6 GW/yr RUPTL)
+const PEAK_DEMAND_GW = 64.2;      // Est. 2025 (PLN 2024: 61.3 GW × 1.047 growth)
+const TARIFF_BASE = 1444;         // PLN Q1 2026: Rp 1,444.70/kWh non-subsidized residential
+const INDONESIA_GDP_B = 1510;     // Est. 2026: IMF $1.44T (2025) × 1.051 growth
 
-// ESDM 2024: Coal 67%, Gas 17.7%, Hydro 6.9%, Geothermal 5.3%, Oil 3.1%, Biomass 1%, Solar/Wind 0.3%, Other 0.7%
+// ESDM 2024-2025, IEEFA 2026: Coal ~67-68%, Gas ~17.7%, etc.
+// NRE target missed 9 consecutive years (IESR 2026)
+// 2025 NRE realization: 14.4% (Oct 2025, ESDM) vs 15.9% RUPTL target
 const ENERGY_MIX = { coal: 0.670, natural_gas: 0.177, oil: 0.031, hydro: 0.069, geothermal: 0.053, solar_wind: 0.003, biomass: 0.010, other_re: 0.007 };
 const EFFICIENCY_SAVINGS = { hvac: 0.25, lighting: 0.50, occupancy: 0.20, peak_shift: 0.15, maintenance: 0.10 };
 const AVG_SAVINGS = Object.values(EFFICIENCY_SAVINGS).reduce((a,b) => a+b, 0) / Object.values(EFFICIENCY_SAVINGS).length;
 
-// EIA 2024: crude imports 354K + product imports 791K = 1.145M bbl/day
-const OIL_BASELINE_USD = 75.0;       // Brent 2024-2025 average
-const NET_OIL_IMPORT_MBPD = 1.145;   // EIA 2024 total oil imports
-const IDR_PER_USD = 16000;           // 2024-2025 approximate
+// 2026 State Budget ICP: $70/bbl. Every $1 increase = Rp 7T fiscal impact (ESI)
+// Oil consumption ~1.7M bbl/day, production ~608K bbl/day (IPA 2025)
+// Fuel reserve: only 21-23 days (Energy Council)
+const OIL_BASELINE_USD = 70.0;       // 2026 State Budget ICP assumption
+const NET_OIL_IMPORT_MBPD = 1.10;    // ~1.1M bbl/day net oil imports
+const IDR_PER_USD = 16975;           // March 2026 rate (BI), down -1.73% YTD
 const TRANSPORT_GDP_SHARE = 0.05;
 
-// Grid zones proportional to PLN 2024 (101 GW total)
+// Grid zones proportional to est. 107 GW (end-2025)
 const GRID_ZONES = {
-    "Java-Bali":  { capacity: 61.0, demand: 40.0 },   // ~60% of national
-    "Sumatra":    { capacity: 15.0, demand: 10.0 },    // ~15%
-    "Kalimantan": { capacity: 8.0,  demand: 5.0 },     // ~8%
-    "Sulawesi":   { capacity: 7.0,  demand: 4.0 },     // ~7%
-    "Papua-NTT":  { capacity: 5.0,  demand: 2.3 },     // ~5%
+    "Java-Bali":  { capacity: 64.0, demand: 42.0 },   // ~60% of national
+    "Sumatra":    { capacity: 16.0, demand: 10.5 },    // ~15%
+    "Kalimantan": { capacity: 8.5,  demand: 5.2 },     // ~8%
+    "Sulawesi":   { capacity: 7.5,  demand: 4.2 },     // ~7%
+    "Papua-NTT":  { capacity: 5.5,  demand: 2.4 },     // ~5%
 };
 
-// Population from BPS, GDP from provincial GRDP estimates
+// Population from BPS/Worldometer mid-2026, GDP from provincial GRDP
 const CITIES = {
     "Jakarta":  { pop: 31.0, gdp: 250, zone: "Java-Bali",  smart: 0.08 },
     "Surabaya": { pop: 3.0,  gdp: 60,  zone: "Java-Bali",  smart: 0.04 },
@@ -237,12 +244,12 @@ const CITIES = {
 };
 
 const SCENARIOS = [
-    { id: "coal_supply_disruption", name: "Coal Supply Disruption", severity: 0.7, days: 90, supplyDrop: 0.25, demandUp: 0.0, zones: ["Java-Bali","Sumatra","Kalimantan"], prob: 0.15, desc: "Coal is 67% of generation (ESDM 2024). Production 833 Mt/yr. Export ban or logistics failure causes 25% supply drop.", color: "#ef4444", oilMult: 1.0, subsidyOverrun: 0, inflationImpact: 0, transportDisrupt: 0 },
-    { id: "extreme_heat_wave", name: "Extreme Heat Wave", severity: 0.6, days: 60, supplyDrop: 0.10, demandUp: 0.25, zones: ["Java-Bali","Sulawesi"], prob: 0.25, desc: "El Nino heatwave: AC demand surges +25%, hydro drops -10%. Java-Bali has ~6 GW overcapacity but PPA constraints limit flexibility (IEA).", color: "#f59e0b", oilMult: 1.0, subsidyOverrun: 0, inflationImpact: 0, transportDisrupt: 0 },
-    { id: "grid_cascade_failure", name: "Grid Cascade Failure", severity: 0.9, days: 7, supplyDrop: 0.60, demandUp: 0.0, zones: ["Java-Bali"], prob: 0.05, desc: "Java-Bali grid (61 GW, 60% of national capacity) cascade failure. Coal IPPs = 2/3 of peak demand, creating inflexible baseload.", color: "#dc2626", oilMult: 1.0, subsidyOverrun: 0, inflationImpact: 0, transportDisrupt: 0 },
-    { id: "natural_gas_price_shock", name: "LNG Price Shock", severity: 0.5, days: 180, supplyDrop: 0.12, demandUp: 0.0, zones: ["Java-Bali","Sumatra","Kalimantan","Sulawesi"], prob: 0.20, desc: "Gas is 17.7% of generation (ESDM 2024). LNG price spike (3x) makes gas uneconomic. Coal at 48% utilization can't ramp fast enough.", color: "#8b5cf6", oilMult: 1.0, subsidyOverrun: 0, inflationImpact: 0, transportDisrupt: 0 },
-    { id: "crude_oil_price_shock", name: "Crude Oil Price Shock", severity: 0.65, days: 180, supplyDrop: 0.03, demandUp: 0.0, zones: ["Java-Bali","Sumatra","Kalimantan","Sulawesi","Papua-NTT"], prob: 0.20, desc: "Oil doubles ($75→$150/bbl). Indonesia imports 1.15M bbl/day (EIA). 2025 subsidy budget Rp 203.4T at risk. Inflation +2.5%.", color: "#d97706", oilMult: 2.0, subsidyOverrun: 0.65, inflationImpact: 2.5, transportDisrupt: 0.15 },
-    { id: "renewable_transition_gap", name: "Renewable Transition Gap", severity: 0.4, days: 365, supplyDrop: 0.08, demandUp: 0.05, zones: ["Java-Bali","Sumatra","Sulawesi","Kalimantan","Papua-NTT"], prob: 0.30, desc: "RUPTL targets 42.6 GW NRE + 10.3 GW storage by 2034. NRE only 15.75% in 2025 vs 17-19% target. Evening peak shortfall.", color: "#06b6d4", oilMult: 1.0, subsidyOverrun: 0, inflationImpact: 0, transportDisrupt: 0 },
+    { id: "coal_supply_disruption", name: "Coal Supply Disruption", severity: 0.7, days: 90, supplyDrop: 0.25, demandUp: 0.0, zones: ["Java-Bali","Sumatra","Kalimantan"], prob: 0.15, desc: "Coal is 67-68% of generation (ESDM/IEEFA 2026). Coal capacity 80 GW of 120 GW total. Export ban or logistics failure causes 25% supply drop.", color: "#ef4444", oilMult: 1.0, subsidyOverrun: 0, inflationImpact: 0, transportDisrupt: 0 },
+    { id: "extreme_heat_wave", name: "Extreme Heat Wave", severity: 0.6, days: 60, supplyDrop: 0.10, demandUp: 0.25, zones: ["Java-Bali","Sulawesi"], prob: 0.25, desc: "El Nino heatwave: AC demand surges +25%, hydro drops -10%. Coal IPP PPA constraints limit dispatch flexibility (IEA).", color: "#f59e0b", oilMult: 1.0, subsidyOverrun: 0, inflationImpact: 0, transportDisrupt: 0 },
+    { id: "grid_cascade_failure", name: "Grid Cascade Failure", severity: 0.9, days: 7, supplyDrop: 0.60, demandUp: 0.0, zones: ["Java-Bali"], prob: 0.05, desc: "Java-Bali grid (~64 GW, 60% of national capacity) cascade failure. Coal IPPs = 2/3 of peak demand, creating inflexible baseload.", color: "#dc2626", oilMult: 1.0, subsidyOverrun: 0, inflationImpact: 0, transportDisrupt: 0 },
+    { id: "natural_gas_price_shock", name: "LNG Price Shock", severity: 0.5, days: 180, supplyDrop: 0.12, demandUp: 0.0, zones: ["Java-Bali","Sumatra","Kalimantan","Sulawesi"], prob: 0.20, desc: "Gas is 17.7% of generation (ESDM). LNG price spike (3x) makes gas uneconomic. Coal at 48% utilization can't ramp fast enough.", color: "#8b5cf6", oilMult: 1.0, subsidyOverrun: 0, inflationImpact: 0, transportDisrupt: 0 },
+    { id: "crude_oil_price_shock", name: "Crude Oil Price Shock", severity: 0.65, days: 180, supplyDrop: 0.03, demandUp: 0.0, zones: ["Java-Bali","Sumatra","Kalimantan","Sulawesi","Papua-NTT"], prob: 0.20, desc: "Oil doubles ($70→$140/bbl). 2026 budget assumes ICP $70/bbl. Every $1 increase = Rp 7T fiscal impact. Inflation already 4.76% (Feb 2026). Fuel reserve only 21-23 days.", color: "#d97706", oilMult: 2.0, subsidyOverrun: 0.65, inflationImpact: 2.5, transportDisrupt: 0.15 },
+    { id: "renewable_transition_gap", name: "Renewable Transition Gap", severity: 0.4, days: 365, supplyDrop: 0.08, demandUp: 0.05, zones: ["Java-Bali","Sumatra","Sulawesi","Kalimantan","Papua-NTT"], prob: 0.30, desc: "NRE target missed 9 consecutive years (IESR 2026). 2025 realization 14.4% vs 15.9% target. 23% target pushed to 2030. RUPTL still adds 16.6 GW fossil.", color: "#06b6d4", oilMult: 1.0, subsidyOverrun: 0, inflationImpact: 0, transportDisrupt: 0 },
 ];
 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -255,7 +262,7 @@ let activeScenario = SCENARIOS[0];
 // SIMULATION ENGINE (JS mirror of Python model)
 // =========================================================================
 function simulate(scenario, year, adoptionRate) {
-    const yearsFrom = year - 2025;
+    const yearsFrom = year - 2026;
     const demandGrowth = Math.pow(1.047, yearsFrom);   // PLN/Ember: 4.7%/yr
     const capacityGW = CAPACITY_GW + 5.6 * yearsFrom;  // RUPTL: 27.9 GW over 2025-2030
     const crisisStart = Math.floor(Math.random() * Math.max(1, 12 - Math.floor(scenario.days / 30)));
@@ -435,11 +442,11 @@ function renderInsights(summary, scenario) {
 
     // Oil-specific insights
     if (summary.isOilShock) {
-        insights.push({ icon: '🛢️', title: 'Crude Oil Price Spike', text: `Oil at $${summary.peakOilPrice}/bbl (${scenario.oilMult}x baseline). Indonesia imports 1.145M bbl/day (EIA 2024: 354K crude + 791K products), directly impacting trade balance and Rupiah.` });
-        insights.push({ icon: '⛽', title: 'Fuel Subsidy Crisis (BBM)', text: `Rp ${summary.totalSubsidyCost.toFixed(1)}T in additional fuel subsidy costs vs 2025 budget of Rp 203.4T. Government faces tough choice: absorb fiscal burden or pass costs to consumers.` });
-        insights.push({ icon: '📈', title: 'Inflation Surge', text: `+${summary.peakInflation}% CPI impact from fuel price pass-through. Affects food transport costs, logistics, and household purchasing power.` });
-        insights.push({ icon: '🚛', title: 'Transport Sector Disruption', text: `$${summary.totalTransportLoss.toFixed(0)}M transport GDP loss. Freight costs rise, supply chains slow, commuter costs increase.` });
-        insights.push({ icon: '💱', title: 'Rupiah Pressure', text: 'Widening trade deficit from oil imports pressures IDR/USD (currently ~Rp 16,000). Bank Indonesia may need to raise rates, further slowing economic growth.' });
+        insights.push({ icon: '🛢️', title: 'Crude Oil Price Spike', text: `Oil at $${summary.peakOilPrice}/bbl (${scenario.oilMult}x baseline). 2026 budget assumes ICP $70/bbl. Every $1 increase = Rp 7T fiscal impact (ESI). If oil averages $92/bbl, fiscal deficit widens to 3.6% of GDP.` });
+        insights.push({ icon: '⛽', title: 'Fuel Subsidy Crisis (BBM)', text: `Rp ${summary.totalSubsidyCost.toFixed(1)}T in additional subsidy costs. 2026 electricity subsidy Rp 101.72T. Fuel reserve only 21-23 days (Energy Council). Government may pass costs to consumers.` });
+        insights.push({ icon: '📈', title: 'Inflation Surge', text: `+${summary.peakInflation}% additional CPI impact. Inflation already 4.76% in Feb 2026 (near 3-year high, above BI target of 1.5-3.5%). Food transport and logistics costs would spike further.` });
+        insights.push({ icon: '🚛', title: 'Transport Sector Disruption', text: `$${summary.totalTransportLoss.toFixed(0)}M transport GDP loss. Indonesia produces only 608K bbl/day vs 1.7M consumption. Refineries meet only 60% of demand (Asia Times).` });
+        insights.push({ icon: '💱', title: 'Rupiah Pressure', text: 'Rupiah at Rp 16,975/USD (Mar 2026), down -1.73% YTD. Bank Indonesia rate at 4.75% (6 months unchanged). Widening trade deficit from oil imports adds further depreciation pressure.' });
     } else {
         if (summary.effPct > 0) insights.push({ icon: '⚡', title: 'Efficiency Impact', text: `Energy efficiency measures reduced demand by ${summary.effPct}%, saving ${summary.effSavings.toFixed(1)} GW-months.` });
         insights.push({ icon: '🌡️', title: 'HVAC Optimization', text: 'Biggest single lever: 25% HVAC savings. Critical during heatwave scenarios when AC drives 40% of peak demand.' });
