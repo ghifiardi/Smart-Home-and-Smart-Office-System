@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Indonesia Energy Crisis Model — Smart Building Mitigation Dashboard</title>
+    <title>Indonesia Energy Crisis Model — Multi-Commodity Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         :root {
@@ -92,12 +92,12 @@
     <!-- Header -->
     <div class="header">
         <h1>Indonesia Energy Crisis Model</h1>
-        <p>Smart Home &amp; Smart Office System — Energy Supply-Demand Simulation &amp; Mitigation Analysis</p>
+        <p>Multi-Commodity Energy Supply-Demand Simulation — Coal, LNG, Crude Oil &amp; Renewables</p>
         <div style="margin-top:12px;">
             <span class="badge badge-danger">82 GW Installed</span>
             <span class="badge badge-warn">61.7% Coal Dependent</span>
-            <span class="badge badge-info">270M Population</span>
-            <span class="badge badge-success">Smart Building Mitigation</span>
+            <span class="badge badge-info">Net Oil Importer</span>
+            <span class="badge badge-success">270M Population</span>
         </div>
     </div>
 
@@ -118,7 +118,7 @@
             </select>
         </div>
         <div class="control-group">
-            <label>Smart Building Adoption</label>
+            <label>Energy Efficiency Adoption</label>
             <input type="range" id="adoptionSlider" min="0" max="50" value="5" style="width:200px;">
             <div class="slider-val" id="adoptionVal">5%</div>
         </div>
@@ -146,8 +146,20 @@
             <canvas id="mixChart"></canvas>
         </div>
         <div class="chart-card">
-            <h3>Smart Building Adoption vs Economic Loss</h3>
+            <h3>Efficiency Adoption vs Economic Loss</h3>
             <canvas id="adoptionChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Oil Price Shock Panel (shown only for oil scenario) -->
+    <div class="chart-grid" id="oilPanel" style="display:none;">
+        <div class="chart-card">
+            <h3>Crude Oil Price &amp; Fuel Subsidy Impact</h3>
+            <canvas id="oilPriceChart"></canvas>
+        </div>
+        <div class="chart-card">
+            <h3>Inflation &amp; Transport Sector Loss</h3>
+            <canvas id="oilMacroChart"></canvas>
         </div>
     </div>
 
@@ -162,8 +174,8 @@
                     <th>Population (M)</th>
                     <th>Blackout Hours</th>
                     <th>Economic Loss ($M)</th>
-                    <th>Smart Mitigation</th>
-                    <th>Smart Buildings</th>
+                    <th>Fuel Subsidy ($M)</th>
+                    <th>Transport Loss ($M)</th>
                 </tr>
             </thead>
             <tbody id="cityTable"></tbody>
@@ -172,13 +184,13 @@
 
     <!-- Insights -->
     <div class="insights" id="insightsPanel">
-        <h3>Key Insights &amp; Platform Value</h3>
+        <h3>Key Insights &amp; Impact Analysis</h3>
         <div id="insightsList"></div>
     </div>
 
     <div class="footer">
-        Indonesia Energy Crisis Model v1.0 — Smart Home &amp; Smart Office System<br>
-        Data sources: PLN, ESDM, World Bank, Feature Expansion Roadmap, Indonesia ASEAN Market Analysis
+        Indonesia Energy Crisis Model v2.0 — Multi-Commodity Analysis (Coal, LNG, Crude Oil)<br>
+        Data sources: PLN, ESDM, World Bank, Pertamina, BPS Indonesia
     </div>
 </div>
 
@@ -190,8 +202,14 @@ const CAPACITY_GW = 82.0;
 const PEAK_DEMAND_GW = 43.5;
 const TARIFF_BASE = 1450;
 const ENERGY_MIX = { coal: 0.617, natural_gas: 0.138, oil: 0.024, hydro: 0.079, geothermal: 0.063, solar_wind: 0.005, biomass: 0.034, other_re: 0.040 };
-const SMART_SAVINGS = { hvac: 0.25, lighting: 0.50, occupancy: 0.20, peak_shift: 0.15, maintenance: 0.10 };
-const AVG_SAVINGS = Object.values(SMART_SAVINGS).reduce((a,b) => a+b, 0) / Object.values(SMART_SAVINGS).length;
+const EFFICIENCY_SAVINGS = { hvac: 0.25, lighting: 0.50, occupancy: 0.20, peak_shift: 0.15, maintenance: 0.10 };
+const AVG_SAVINGS = Object.values(EFFICIENCY_SAVINGS).reduce((a,b) => a+b, 0) / Object.values(EFFICIENCY_SAVINGS).length;
+
+// Crude oil constants
+const OIL_BASELINE_USD = 80.0;
+const NET_OIL_IMPORT_MBPD = 0.6;
+const IDR_PER_USD = 15800;
+const TRANSPORT_GDP_SHARE = 0.05;
 
 const GRID_ZONES = {
     "Java-Bali":  { capacity: 45.0, demand: 30.0 },
@@ -210,11 +228,12 @@ const CITIES = {
 };
 
 const SCENARIOS = [
-    { id: "coal_supply_disruption", name: "Coal Supply Disruption", severity: 0.7, days: 90, supplyDrop: 0.25, demandUp: 0.0, zones: ["Java-Bali","Sumatra","Kalimantan"], prob: 0.15, desc: "Major coal supply disruption. Indonesia relies on coal for 61.7% of generation.", color: "#ef4444" },
-    { id: "extreme_heat_wave", name: "Extreme Heat Wave", severity: 0.6, days: 60, supplyDrop: 0.10, demandUp: 0.25, zones: ["Java-Bali","Sulawesi"], prob: 0.25, desc: "El Nino heatwave: AC demand surges +25%, hydro drops -10%.", color: "#f59e0b" },
-    { id: "grid_cascade_failure", name: "Grid Cascade Failure", severity: 0.9, days: 7, supplyDrop: 0.60, demandUp: 0.0, zones: ["Java-Bali"], prob: 0.05, desc: "Cascading grid failure on Java-Bali affecting 150M+ people.", color: "#dc2626" },
-    { id: "natural_gas_price_shock", name: "Gas Price Shock", severity: 0.5, days: 180, supplyDrop: 0.12, demandUp: 0.0, zones: ["Java-Bali","Sumatra","Kalimantan","Sulawesi"], prob: 0.20, desc: "Global LNG price spike makes gas generation uneconomic.", color: "#8b5cf6" },
-    { id: "renewable_transition_gap", name: "Renewable Transition Gap", severity: 0.4, days: 365, supplyDrop: 0.08, demandUp: 0.05, zones: ["Java-Bali","Sumatra","Sulawesi","Kalimantan","Papua-NTT"], prob: 0.30, desc: "Coal retirements outpace renewable buildout. Structural shortfall.", color: "#06b6d4" },
+    { id: "coal_supply_disruption", name: "Coal Supply Disruption", severity: 0.7, days: 90, supplyDrop: 0.25, demandUp: 0.0, zones: ["Java-Bali","Sumatra","Kalimantan"], prob: 0.15, desc: "Major coal supply disruption. Indonesia relies on coal for 61.7% of generation.", color: "#ef4444", oilMult: 1.0, subsidyOverrun: 0, inflationImpact: 0, transportDisrupt: 0 },
+    { id: "extreme_heat_wave", name: "Extreme Heat Wave", severity: 0.6, days: 60, supplyDrop: 0.10, demandUp: 0.25, zones: ["Java-Bali","Sulawesi"], prob: 0.25, desc: "El Nino heatwave: AC demand surges +25%, hydro drops -10%.", color: "#f59e0b", oilMult: 1.0, subsidyOverrun: 0, inflationImpact: 0, transportDisrupt: 0 },
+    { id: "grid_cascade_failure", name: "Grid Cascade Failure", severity: 0.9, days: 7, supplyDrop: 0.60, demandUp: 0.0, zones: ["Java-Bali"], prob: 0.05, desc: "Cascading grid failure on Java-Bali affecting 150M+ people.", color: "#dc2626", oilMult: 1.0, subsidyOverrun: 0, inflationImpact: 0, transportDisrupt: 0 },
+    { id: "natural_gas_price_shock", name: "LNG Price Shock", severity: 0.5, days: 180, supplyDrop: 0.12, demandUp: 0.0, zones: ["Java-Bali","Sumatra","Kalimantan","Sulawesi"], prob: 0.20, desc: "Global LNG price spike (3x) makes gas generation uneconomic.", color: "#8b5cf6", oilMult: 1.0, subsidyOverrun: 0, inflationImpact: 0, transportDisrupt: 0 },
+    { id: "crude_oil_price_shock", name: "Crude Oil Price Shock", severity: 0.65, days: 180, supplyDrop: 0.03, demandUp: 0.0, zones: ["Java-Bali","Sumatra","Kalimantan","Sulawesi","Papua-NTT"], prob: 0.20, desc: "Oil price doubles ($80→$160/bbl). Fuel subsidies balloon, inflation surges +2.5%, transport sector disrupted.", color: "#d97706", oilMult: 2.0, subsidyOverrun: 0.65, inflationImpact: 2.5, transportDisrupt: 0.15 },
+    { id: "renewable_transition_gap", name: "Renewable Transition Gap", severity: 0.4, days: 365, supplyDrop: 0.08, demandUp: 0.05, zones: ["Java-Bali","Sumatra","Sulawesi","Kalimantan","Papua-NTT"], prob: 0.30, desc: "Coal retirements outpace renewable buildout. Structural shortfall.", color: "#06b6d4", oilMult: 1.0, subsidyOverrun: 0, inflationImpact: 0, transportDisrupt: 0 },
 ];
 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -235,7 +254,8 @@ function simulate(scenario, year, adoptionRate) {
 
     const affectedShare = scenario.zones.reduce((s, z) => s + (GRID_ZONES[z]?.capacity || 0), 0) / capacityGW;
     let monthly = [];
-    let totDeficit = 0, totShedding = 0, totSmart = 0;
+    let totDeficit = 0, totShedding = 0, totEffSavings = 0;
+    let totSubsidyCost = 0, totTransportLoss = 0;
 
     for (let m = 0; m < 12; m++) {
         const isCrisis = m >= crisisStart && m <= crisisEnd;
@@ -245,8 +265,8 @@ function simulate(scenario, year, adoptionRate) {
         let supply = capacityGW * 0.65;
         if (isCrisis) supply *= (1 - scenario.supplyDrop * affectedShare);
 
-        const smartSave = demand * 0.40 * adoptionRate * AVG_SAVINGS;
-        const effDemand = demand - smartSave;
+        const effSave = demand * 0.40 * adoptionRate * AVG_SAVINGS;
+        const effDemand = demand - effSave;
         const deficit = Math.max(0, effDemand - supply);
         const margin = supply > 0 ? (supply - effDemand) / supply : -1;
         const shedding = deficit * 0.8;
@@ -259,27 +279,40 @@ function simulate(scenario, year, adoptionRate) {
         const gwh = supply * 730 * 0.7;
         const co2 = gwh * (ENERGY_MIX.coal * 900 + ENERGY_MIX.natural_gas * 400 + ENERGY_MIX.oil * 700 + ENERGY_MIX.hydro * 4 + ENERGY_MIX.geothermal * 15) / 1e6;
 
-        monthly.push({ month: MONTHS[m], demand: +demand.toFixed(2), supply: +supply.toFixed(2), margin: +margin.toFixed(4), deficit: +deficit.toFixed(2), shedding: +shedding.toFixed(2), smartSave: +smartSave.toFixed(3), tariff: Math.round(tariff), co2: +co2.toFixed(2), crisis: isCrisis });
-        totDeficit += deficit; totShedding += shedding; totSmart += smartSave;
+        // Oil price shock impacts
+        let oilPrice = OIL_BASELINE_USD;
+        let subsidyCost = 0, inflation = 0, transportLoss = 0;
+        if (isCrisis && scenario.oilMult > 1.0) {
+            oilPrice = OIL_BASELINE_USD * scenario.oilMult;
+            const extraImportCost = (oilPrice - OIL_BASELINE_USD) * NET_OIL_IMPORT_MBPD * 1e6 * 30;
+            subsidyCost = (extraImportCost * IDR_PER_USD) / 1e12; // trillion IDR
+            inflation = scenario.inflationImpact;
+            transportLoss = 1300000 * TRANSPORT_GDP_SHARE * scenario.transportDisrupt / 12; // $M/month
+        }
+
+        monthly.push({ month: MONTHS[m], demand: +demand.toFixed(2), supply: +supply.toFixed(2), margin: +margin.toFixed(4), deficit: +deficit.toFixed(2), shedding: +shedding.toFixed(2), effSave: +effSave.toFixed(3), tariff: Math.round(tariff), co2: +co2.toFixed(2), crisis: isCrisis, oilPrice: +oilPrice.toFixed(2), subsidyCost: +subsidyCost.toFixed(2), inflation: +inflation.toFixed(2), transportLoss: +transportLoss.toFixed(1) });
+        totDeficit += deficit; totShedding += shedding; totEffSavings += effSave;
+        totSubsidyCost += subsidyCost; totTransportLoss += transportLoss;
     }
 
     // City impacts
     let cityImpacts = [];
     for (const [city, info] of Object.entries(CITIES)) {
         const affected = scenario.zones.includes(info.zone);
-        if (affected && totDeficit > 0) {
+        if (affected && (totDeficit > 0 || totTransportLoss > 0)) {
             const zoneDemand = GRID_ZONES[info.zone].demand;
             const share = info.pop / 50.0;
-            let blackout = (totShedding / zoneDemand) * scenario.days * 2 * share;
+            let blackout = totDeficit > 0 ? (totShedding / zoneDemand) * scenario.days * 2 * share : 0;
             blackout = Math.min(blackout, scenario.days * 8);
             const unserved = totShedding * share * 730 * 0.3;
-            const loss = unserved * 0.5;
-            const adopt = Math.max(info.smart, adoptionRate);
-            const mitig = adopt * AVG_SAVINGS * 100;
-            const bldgs = Math.floor(info.pop * 1000 * 0.02 * adopt);
-            cityImpacts.push({ city, zone: info.zone, pop: info.pop, blackout: +blackout.toFixed(1), loss: +loss.toFixed(1), mitigation: +mitig.toFixed(1), buildings: bldgs });
+            let loss = unserved * 0.5;
+            const gdpShare = info.gdp / 1300;
+            const citySubsidy = totSubsidyCost * gdpShare * 1000 / IDR_PER_USD; // $M
+            const cityTransport = totTransportLoss * gdpShare;
+            loss += cityTransport;
+            cityImpacts.push({ city, zone: info.zone, pop: info.pop, blackout: +blackout.toFixed(1), loss: +loss.toFixed(1), subsidy: +citySubsidy.toFixed(1), transportLoss: +cityTransport.toFixed(1) });
         } else {
-            cityImpacts.push({ city, zone: info.zone, pop: 0, blackout: 0, loss: 0, mitigation: 0, buildings: 0 });
+            cityImpacts.push({ city, zone: info.zone, pop: 0, blackout: 0, loss: 0, subsidy: 0, transportLoss: 0 });
         }
     }
 
@@ -290,12 +323,18 @@ function simulate(scenario, year, adoptionRate) {
     return {
         monthly, cityImpacts,
         summary: {
-            deficit: +totDeficit.toFixed(2), shedding: +totShedding.toFixed(2), smart: +totSmart.toFixed(2),
+            deficit: +totDeficit.toFixed(2), shedding: +totShedding.toFixed(2), effSavings: +totEffSavings.toFixed(2),
             loss: +totalLoss.toFixed(1), pop: +totalPop.toFixed(1),
             peakTariff: Math.max(...monthly.map(m => m.tariff)),
             avgCo2: +(monthly.reduce((s, m) => s + m.co2, 0) / 12).toFixed(2),
             worstDeficit: Math.max(...monthly.map(m => m.deficit)),
-            smartPct: totalDemand > 0 ? +((totSmart / totalDemand) * 100).toFixed(2) : 0,
+            effPct: totalDemand > 0 ? +((totEffSavings / totalDemand) * 100).toFixed(2) : 0,
+            // Oil-specific
+            peakOilPrice: Math.max(...monthly.map(m => m.oilPrice)),
+            totalSubsidyCost: +totSubsidyCost.toFixed(2),
+            totalTransportLoss: +totTransportLoss.toFixed(1),
+            peakInflation: Math.max(...monthly.map(m => m.inflation)),
+            isOilShock: scenario.oilMult > 1.0,
         }
     };
 }
@@ -304,7 +343,7 @@ function adoptionComparison(scenario, year) {
     const rates = [0, 0.05, 0.10, 0.20, 0.35, 0.50];
     const results = rates.map(r => {
         const res = simulate(scenario, year, r);
-        return { rate: r, loss: res.summary.loss, smart: res.summary.smart, deficit: res.summary.deficit };
+        return { rate: r, loss: res.summary.loss, effSavings: res.summary.effSavings, deficit: res.summary.deficit };
     });
     const baseLoss = results[0].loss;
     return results.map(r => ({ ...r, mitigation: baseLoss > 0 ? +((1 - r.loss / baseLoss) * 100).toFixed(1) : 0 }));
@@ -339,16 +378,28 @@ function selectScenario(id) {
 }
 
 function renderKPIs(summary) {
-    document.getElementById('kpiGrid').innerHTML = `
+    let html = `
         <div class="kpi kpi-danger"><div class="kpi-value">${summary.deficit.toFixed(1)}</div><div class="kpi-label">Total Deficit (GW-months)</div></div>
         <div class="kpi kpi-warn"><div class="kpi-value">${summary.worstDeficit.toFixed(1)}</div><div class="kpi-label">Peak Month Deficit (GW)</div></div>
-        <div class="kpi kpi-success"><div class="kpi-value">${summary.smart.toFixed(1)}</div><div class="kpi-label">Smart Savings (GW-months)</div></div>
-        <div class="kpi kpi-info"><div class="kpi-value">${summary.smartPct}%</div><div class="kpi-label">Demand Reduced by Smart</div></div>
-        <div class="kpi kpi-danger"><div class="kpi-value">$${summary.loss.toFixed(0)}M</div><div class="kpi-label">Economic Loss (USD)</div></div>
+        <div class="kpi kpi-danger"><div class="kpi-value">$${summary.loss.toFixed(0)}M</div><div class="kpi-label">Total Economic Loss (USD)</div></div>
         <div class="kpi kpi-warn"><div class="kpi-value">${summary.pop.toFixed(1)}M</div><div class="kpi-label">Population Affected</div></div>
         <div class="kpi kpi-warn"><div class="kpi-value">Rp ${summary.peakTariff.toLocaleString()}</div><div class="kpi-label">Peak Tariff (/kWh)</div></div>
         <div class="kpi kpi-info"><div class="kpi-value">${summary.avgCo2}</div><div class="kpi-label">Avg CO2 (Mt/month)</div></div>
     `;
+    if (summary.isOilShock) {
+        html += `
+        <div class="kpi kpi-danger"><div class="kpi-value">$${summary.peakOilPrice}/bbl</div><div class="kpi-label">Peak Oil Price</div></div>
+        <div class="kpi kpi-warn"><div class="kpi-value">Rp ${summary.totalSubsidyCost.toFixed(1)}T</div><div class="kpi-label">Fuel Subsidy Overrun</div></div>
+        <div class="kpi kpi-danger"><div class="kpi-value">+${summary.peakInflation}%</div><div class="kpi-label">Inflation Impact (CPI)</div></div>
+        <div class="kpi kpi-warn"><div class="kpi-value">$${summary.totalTransportLoss.toFixed(0)}M</div><div class="kpi-label">Transport Sector Loss</div></div>
+        `;
+    } else {
+        html += `
+        <div class="kpi kpi-success"><div class="kpi-value">${summary.effSavings.toFixed(1)}</div><div class="kpi-label">Efficiency Savings (GW-mo)</div></div>
+        <div class="kpi kpi-info"><div class="kpi-value">${summary.effPct}%</div><div class="kpi-label">Demand Reduced</div></div>
+        `;
+    }
+    document.getElementById('kpiGrid').innerHTML = html;
 }
 
 function renderCityTable(cities) {
@@ -362,8 +413,8 @@ function renderCityTable(cities) {
             <td class="bar-cell">
                 ${c.loss > 0 ? `$${c.loss.toFixed(0)}M <div class="bar-inner" style="width:${(c.loss/maxLoss*100).toFixed(0)}%; margin-top:4px;"></div>` : '—'}
             </td>
-            <td>${c.mitigation > 0 ? c.mitigation.toFixed(1) + '%' : '—'}</td>
-            <td>${c.buildings > 0 ? c.buildings.toLocaleString() : '—'}</td>
+            <td>${c.subsidy > 0 ? '$' + c.subsidy.toFixed(0) + 'M' : '—'}</td>
+            <td>${c.transportLoss > 0 ? '$' + c.transportLoss.toFixed(0) + 'M' : '—'}</td>
         </tr>
     `).join('');
 }
@@ -371,12 +422,22 @@ function renderCityTable(cities) {
 function renderInsights(summary, scenario) {
     const insights = [];
     if (summary.deficit > 5) insights.push({ icon: '⚡', title: 'Critical Supply Gap', text: `${summary.deficit.toFixed(1)} GW-months of deficit. Rolling blackouts are inevitable without intervention.` });
-    if (summary.smartPct > 0) insights.push({ icon: '🏢', title: 'Smart Building Impact', text: `Smart systems reduced demand by ${summary.smartPct}%, saving ${summary.smart.toFixed(1)} GW-months. Increasing adoption to 20% could triple this.` });
-    if (summary.loss > 100) insights.push({ icon: '💰', title: 'Economic Cost', text: `$${summary.loss.toFixed(0)}M in economic losses. Smart building investment of $${(summary.loss * 0.1).toFixed(0)}M could mitigate 30-60% of this.` });
-    insights.push({ icon: '🌡️', title: 'HVAC Optimization', text: 'Biggest single lever: 25% HVAC savings. Critical during heatwave scenarios when AC drives 40% of peak demand.' });
-    insights.push({ icon: '💡', title: 'Smart Lighting', text: '50% lighting savings with fastest ROI (12-18 months). Reduces base load across all crisis scenarios.' });
-    insights.push({ icon: '📊', title: 'Peak Demand Shifting', text: '15% peak load shift via smart scheduling. Directly prevents grid overload and reduces need for load shedding.' });
-    if (scenario.prob >= 0.25) insights.push({ icon: '⚠️', title: 'High Probability Event', text: `This scenario has ${(scenario.prob*100).toFixed(0)}% annual probability. Proactive smart building deployment is a strategic imperative.` });
+    if (summary.loss > 100) insights.push({ icon: '💰', title: 'Economic Cost', text: `$${summary.loss.toFixed(0)}M in total economic losses across affected cities.` });
+
+    // Oil-specific insights
+    if (summary.isOilShock) {
+        insights.push({ icon: '🛢️', title: 'Crude Oil Price Spike', text: `Oil at $${summary.peakOilPrice}/bbl (${scenario.oilMult}x baseline). Indonesia imports ~600K bbl/day, directly impacting trade balance and Rupiah.` });
+        insights.push({ icon: '⛽', title: 'Fuel Subsidy Crisis (BBM)', text: `Rp ${summary.totalSubsidyCost.toFixed(1)}T in additional fuel subsidy costs. Government faces tough choice: absorb fiscal burden or pass costs to consumers.` });
+        insights.push({ icon: '📈', title: 'Inflation Surge', text: `+${summary.peakInflation}% CPI impact from fuel price pass-through. Affects food transport costs, logistics, and household purchasing power.` });
+        insights.push({ icon: '🚛', title: 'Transport Sector Disruption', text: `$${summary.totalTransportLoss.toFixed(0)}M transport GDP loss. Freight costs rise, supply chains slow, commuter costs increase.` });
+        insights.push({ icon: '💱', title: 'Rupiah Pressure', text: 'Widening trade deficit from oil imports pressures IDR/USD. Bank Indonesia may need to raise rates, further slowing economic growth.' });
+    } else {
+        if (summary.effPct > 0) insights.push({ icon: '⚡', title: 'Efficiency Impact', text: `Energy efficiency measures reduced demand by ${summary.effPct}%, saving ${summary.effSavings.toFixed(1)} GW-months.` });
+        insights.push({ icon: '🌡️', title: 'HVAC Optimization', text: 'Biggest single lever: 25% HVAC savings. Critical during heatwave scenarios when AC drives 40% of peak demand.' });
+        insights.push({ icon: '📊', title: 'Peak Demand Shifting', text: '15% peak load shift via scheduling. Directly prevents grid overload and reduces load shedding.' });
+    }
+
+    if (scenario.prob >= 0.25) insights.push({ icon: '⚠️', title: 'High Probability Event', text: `This scenario has ${(scenario.prob*100).toFixed(0)}% annual probability. Proactive mitigation planning is essential.` });
 
     document.getElementById('insightsList').innerHTML = insights.map(i => `
         <div class="insight-item">
@@ -393,7 +454,7 @@ const chartDefaults = { responsive: true, maintainAspectRatio: false, plugins: {
 
 function destroyCharts() { Object.values(charts).forEach(c => c.destroy()); charts = {}; }
 
-function renderCharts(monthly, adoptionData) {
+function renderCharts(monthly, adoptionData, isOilShock) {
     destroyCharts();
     const labels = monthly.map(m => m.month);
 
@@ -404,7 +465,7 @@ function renderCharts(monthly, adoptionData) {
             datasets: [
                 { label: 'Demand (GW)', data: monthly.map(m => m.demand), borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', fill: true, tension: 0.3 },
                 { label: 'Supply (GW)', data: monthly.map(m => m.supply), borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.1)', fill: true, tension: 0.3 },
-                { label: 'Smart Savings (GW)', data: monthly.map(m => m.smartSave), borderColor: '#38bdf8', backgroundColor: 'rgba(56,189,248,0.2)', fill: true, tension: 0.3 },
+                { label: 'Efficiency Savings (GW)', data: monthly.map(m => m.effSave), borderColor: '#38bdf8', backgroundColor: 'rgba(56,189,248,0.2)', fill: true, tension: 0.3 },
             ]
         }, options: { ...chartDefaults, plugins: { ...chartDefaults.plugins, annotation: {} } }
     });
@@ -420,9 +481,7 @@ function renderCharts(monthly, adoptionData) {
         }, options: { ...chartDefaults, scales: { ...chartDefaults.scales, y: { ...chartDefaults.scales.y, title: { display: true, text: 'Reserve Margin %', color: '#94a3b8' } }, y1: { position: 'right', ticks: { color: '#94a3b8' }, grid: { display: false }, title: { display: true, text: 'Load Shedding GW', color: '#94a3b8' } } } }
     });
 
-    // Energy Mix (during crisis month vs normal)
-    const crisisMonth = monthly.find(m => m.crisis) || monthly[0];
-    const normalMonth = monthly.find(m => !m.crisis) || monthly[0];
+    // Energy Mix
     const mixLabels = Object.keys(ENERGY_MIX).map(k => k.replace('_', ' '));
     charts.mix = new Chart(document.getElementById('mixChart'), {
         type: 'doughnut', data: {
@@ -443,8 +502,36 @@ function renderCharts(monthly, adoptionData) {
                 { label: 'Economic Loss ($M)', data: adoptionData.map(d => d.loss), backgroundColor: 'rgba(239,68,68,0.7)', yAxisID: 'y' },
                 { label: 'Loss Mitigation %', data: adoptionData.map(d => d.mitigation), type: 'line', borderColor: '#22c55e', backgroundColor: 'transparent', yAxisID: 'y1', tension: 0.3, pointRadius: 6 },
             ]
-        }, options: { ...chartDefaults, scales: { ...chartDefaults.scales, x: { ...chartDefaults.scales.x, title: { display: true, text: 'Smart Building Adoption Rate', color: '#94a3b8' } }, y: { ...chartDefaults.scales.y, title: { display: true, text: 'Economic Loss ($M)', color: '#94a3b8' } }, y1: { position: 'right', ticks: { color: '#94a3b8' }, grid: { display: false }, title: { display: true, text: 'Mitigation %', color: '#94a3b8' } } } }
+        }, options: { ...chartDefaults, scales: { ...chartDefaults.scales, x: { ...chartDefaults.scales.x, title: { display: true, text: 'Energy Efficiency Adoption Rate', color: '#94a3b8' } }, y: { ...chartDefaults.scales.y, title: { display: true, text: 'Economic Loss ($M)', color: '#94a3b8' } }, y1: { position: 'right', ticks: { color: '#94a3b8' }, grid: { display: false }, title: { display: true, text: 'Mitigation %', color: '#94a3b8' } } } }
     });
+
+    // Oil-specific charts
+    const oilPanel = document.getElementById('oilPanel');
+    if (isOilShock) {
+        oilPanel.style.display = 'grid';
+        // Oil Price & Subsidy chart
+        charts.oilPrice = new Chart(document.getElementById('oilPriceChart'), {
+            type: 'bar', data: {
+                labels,
+                datasets: [
+                    { label: 'Oil Price ($/bbl)', data: monthly.map(m => m.oilPrice), backgroundColor: monthly.map(m => m.oilPrice > OIL_BASELINE_USD ? 'rgba(217,119,6,0.8)' : 'rgba(100,116,139,0.5)'), yAxisID: 'y' },
+                    { label: 'Subsidy Cost (Rp T)', data: monthly.map(m => m.subsidyCost), type: 'line', borderColor: '#ef4444', backgroundColor: 'transparent', yAxisID: 'y1', tension: 0.3, pointRadius: 4 },
+                ]
+            }, options: { ...chartDefaults, scales: { ...chartDefaults.scales, y: { ...chartDefaults.scales.y, title: { display: true, text: 'Oil Price ($/bbl)', color: '#94a3b8' } }, y1: { position: 'right', ticks: { color: '#94a3b8' }, grid: { display: false }, title: { display: true, text: 'Monthly Subsidy Cost (Rp T)', color: '#94a3b8' } } } }
+        });
+        // Inflation & Transport chart
+        charts.oilMacro = new Chart(document.getElementById('oilMacroChart'), {
+            type: 'bar', data: {
+                labels,
+                datasets: [
+                    { label: 'Transport Loss ($M/mo)', data: monthly.map(m => m.transportLoss), backgroundColor: 'rgba(239,68,68,0.6)', yAxisID: 'y' },
+                    { label: 'Inflation Impact (%)', data: monthly.map(m => m.inflation), type: 'line', borderColor: '#f59e0b', backgroundColor: 'transparent', yAxisID: 'y1', tension: 0.3, pointRadius: 4, pointBackgroundColor: '#f59e0b' },
+                ]
+            }, options: { ...chartDefaults, scales: { ...chartDefaults.scales, y: { ...chartDefaults.scales.y, title: { display: true, text: 'Transport Loss ($M)', color: '#94a3b8' } }, y1: { position: 'right', ticks: { color: '#94a3b8' }, grid: { display: false }, title: { display: true, text: 'CPI Inflation %', color: '#94a3b8' } } } }
+        });
+    } else {
+        oilPanel.style.display = 'none';
+    }
 }
 
 // =========================================================================
@@ -457,7 +544,7 @@ function runSimulation() {
     const compData = adoptionComparison(activeScenario, year);
 
     renderKPIs(result.summary);
-    renderCharts(result.monthly, compData);
+    renderCharts(result.monthly, compData, result.summary.isOilShock);
     renderCityTable(result.cityImpacts);
     renderInsights(result.summary, activeScenario);
 }

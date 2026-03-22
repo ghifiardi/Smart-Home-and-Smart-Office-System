@@ -1,14 +1,15 @@
-# Indonesia Energy Crisis Model
+# Indonesia Energy Crisis Model v2.0
 
-**Smart Home & Smart Office System — Energy Supply-Demand Simulation & Mitigation Analysis**
+**Multi-Commodity Energy Supply-Demand Simulation — Coal, LNG, Crude Oil & Renewables**
 
 ## Overview
 
-This model simulates Indonesia's energy supply-demand dynamics under various crisis scenarios and quantifies how smart building / smart home systems can mitigate crisis impacts. It builds directly on existing platform data:
+This model simulates Indonesia's energy supply-demand dynamics under various crisis scenarios, including commodity-specific impacts from coal, LNG, and crude oil price shocks. It models both electricity system effects and broader macroeconomic impacts (fuel subsidies, inflation, transport disruption).
 
-- **Indonesia ASEAN Market Analysis** — 270M population, 5 priority cities, $2.5-3B TAM
-- **Feature Expansion Roadmap** — energy management features with 20-30% savings targets
-- **Existing IoT architecture** — MQTT, TimescaleDB, FastAPI sensor infrastructure
+Based on Indonesia energy market data:
+- 270M population, 57% urban, 5 priority cities
+- PLN / ESDM energy statistics
+- World Bank and Pertamina economic data
 
 ## Key Parameters
 
@@ -17,27 +18,40 @@ This model simulates Indonesia's energy supply-demand dynamics under various cri
 | Installed Capacity | 82 GW | PLN 2025 |
 | Peak Demand | 43.5 GW | PLN 2025 |
 | Coal Dependency | 61.7% | ESDM |
+| Oil in Mix | 2.4% | ESDM |
+| Net Oil Imports | ~600K bbl/day | Pertamina |
+| Crude Oil Baseline | $80/bbl | Brent |
+| Fuel Subsidy Budget | ~Rp 150T/year | APBN |
 | Population | 270M | BPS |
-| Urban Ratio | 57% | World Bank |
-| Smart HVAC Savings | 25% | Feature Roadmap |
-| Smart Lighting Savings | 50% | Feature Roadmap |
 
 ## Crisis Scenarios Modeled
 
-| Scenario | Severity | Annual Probability | Supply Impact |
-|----------|----------|-------------------|---------------|
-| Coal Supply Disruption | 70% | 15% | -25% supply |
+| Scenario | Severity | Annual Prob | Key Impact |
+|----------|----------|-------------|------------|
+| Coal Supply Disruption | 70% | 15% | -25% supply, blackouts |
 | Extreme Heat Wave | 60% | 25% | -10% supply, +25% demand |
-| Grid Cascade Failure | 90% | 5% | -60% supply |
-| Natural Gas Price Shock | 50% | 20% | -12% supply |
+| Grid Cascade Failure | 90% | 5% | -60% supply, 150M+ affected |
+| LNG Price Shock | 50% | 20% | -12% supply, electricity cost surge |
+| **Crude Oil Price Shock** | **65%** | **20%** | **Oil 2x, subsidy crisis, +2.5% inflation, transport disruption** |
 | Renewable Transition Gap | 40% | 30% | -8% supply, +5% demand |
+
+### Crude Oil Price Shock — Detailed Impact Chain
+
+```
+Oil price doubles ($80 → $160/bbl)
+    ├── Fiscal: Fuel subsidy (BBM) overrun ~65% (~Rp 97T+ extra)
+    ├── Inflation: +2.5% CPI from fuel pass-through
+    ├── Transport: 15% sector GDP loss (~$812M/month)
+    ├── Currency: Rupiah pressure from widening trade deficit
+    └── Electricity: Oil-fired generation (2.4%) curtailed
+```
 
 ## Files
 
 | File | Description |
 |------|-------------|
-| `indonesia_energy_crisis_simulation.py` | Python simulation engine — run all scenarios, compare smart adoption rates, export JSON |
-| `energy-crisis-dashboard.html` | Interactive browser dashboard — scenario selection, KPIs, charts, city impact table |
+| `indonesia_energy_crisis_simulation.py` | Python simulation engine — all 6 scenarios, efficiency comparison, JSON export |
+| `energy-crisis-dashboard.html` | Interactive browser dashboard — scenario selection, oil-specific charts, KPIs, city impacts |
 | `simulation_results.json` | Generated output (after running simulation) |
 
 ## Quick Start
@@ -50,22 +64,24 @@ python indonesia_energy_crisis_simulation.py
 ```
 
 This will:
-1. Run all 5 crisis scenarios for 2026
-2. Compare smart building adoption rates (0% to 50%)
+1. Run all 6 crisis scenarios for 2026 (including crude oil price shock)
+2. Compare energy efficiency adoption rates (0% to 50%)
 3. Export results to `simulation_results.json`
 4. Print key insights
 
 ### Open Dashboard
 
 Open `energy-crisis-dashboard.html` in any browser. The dashboard runs entirely client-side with:
-- Scenario selector (5 crisis types)
+- 6 scenario cards (including Crude Oil Price Shock)
 - Year slider (2026-2030)
-- Smart building adoption slider (0-50%)
+- Energy efficiency adoption slider (0-50%)
 - Supply vs Demand chart
 - Reserve margin & load shedding chart
 - Energy mix breakdown
-- Adoption vs Economic Loss comparison
-- City-level impact table (Jakarta, Surabaya, Bandung, Medan, Semarang)
+- **Oil price & fuel subsidy chart** (oil scenario only)
+- **Inflation & transport loss chart** (oil scenario only)
+- Efficiency adoption vs Economic Loss comparison
+- City-level impact table with fuel subsidy and transport loss columns
 
 ## Key Findings
 
@@ -73,30 +89,23 @@ Open `energy-crisis-dashboard.html` in any browser. The dashboard runs entirely 
 
 2. **Climate amplification** is the most frequent risk (25%/year) — El Nino simultaneously increases demand (+25% AC) and reduces supply (-10% hydro)
 
-3. **Smart buildings at 20% adoption** reduce peak demand by 2-4%, preventing ~30% of load shedding events
+3. **Crude oil price shock** has outsized economic impact despite oil being only 2.4% of generation mix:
+   - ~Rp 159T fuel subsidy overrun
+   - $5.7B+ transport sector losses
+   - +2.5% inflation hitting household purchasing power
+   - Rupiah depreciation from trade deficit widening
 
-4. **At 50% adoption**, economic losses from energy crises drop by 40-60%
+4. **LNG vs Oil**: LNG price shocks primarily affect electricity costs; oil price shocks cascade into transport, inflation, and fiscal policy
 
-5. **HVAC optimization (25% savings)** is the biggest single lever; **smart lighting (50% savings)** has the fastest ROI
+5. **Energy efficiency at 20% adoption** reduces peak demand by 2-4%, preventing ~30% of load shedding events
 
-6. **Platform value**: The Smart Home & Smart Office System is both a cost-saving tool AND crisis mitigation infrastructure
-
-## Architecture Integration
-
-The model connects to the existing platform architecture:
-
-```
-Sensors (MQTT) → IoT Gateway → Energy Management Service → TimescaleDB
-                                      ↓
-                              Smart Controls (HVAC, Lighting, Load Shifting)
-                                      ↓
-                              Crisis Dashboard (this model)
-```
+6. **Policy alignment**: Indonesia's RUPTL targets 23% renewable energy. The transition gap is the most probable scenario (30%/year)
 
 ## Data Sources
 
 - PLN (State Electricity Company) — capacity & demand data
 - ESDM (Ministry of Energy) — energy mix, RUPTL targets
 - World Bank — economic loss estimates ($0.5M/GWh unserved)
-- Feature Expansion Roadmap — smart building savings rates
-- Indonesia ASEAN Market Analysis — city demographics & market data
+- Pertamina — oil import volumes, fuel subsidy data
+- BPS Indonesia — CPI weights, transport GDP share
+- APBN (State Budget) — fuel subsidy allocations

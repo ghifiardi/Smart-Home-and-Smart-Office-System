@@ -1,22 +1,25 @@
 """
 Indonesia Energy Crisis Model
 ==============================
-Simulates Indonesia's energy supply-demand dynamics and models how smart
-building / smart home systems can mitigate crisis impacts.
+Simulates Indonesia's energy supply-demand dynamics, modelling crisis
+scenarios across multiple energy commodities (coal, LNG, crude oil)
+and their cascading impacts on electricity, fuel subsidies, inflation,
+and the transport sector.
 
-Built on top of the Smart Home and Smart Office System platform data:
-- Indonesia market analysis (270M population, 57% urban, 5 priority cities)
-- Feature Expansion Roadmap (energy management, 20-30% savings targets)
-- Existing IoT sensor architecture (MQTT, TimescaleDB, FastAPI)
+Based on Indonesia market data:
+- 270M population, 57% urban, 5 priority cities
+- PLN / ESDM energy statistics
+- World Bank economic impact estimates
 
 Key scenarios modelled:
-1. Grid overload during peak demand
-2. Fossil fuel supply disruption (coal/gas shortage)
-3. Renewable transition gap
-4. Regional blackout cascades
-5. Climate-driven demand surge (extreme heat events)
+1. Coal supply disruption
+2. Extreme heat wave (El Nino)
+3. Grid cascade failure
+4. Natural gas / LNG price shock
+5. Crude oil price shock (fuel subsidy, inflation, transport)
+6. Renewable transition gap
 
-Author: Smart Home & Smart Office System Team
+Author: Indonesia Energy Crisis Model Team
 """
 
 import json
@@ -55,11 +58,11 @@ ENERGY_MIX = {
 
 # Priority cities from market analysis
 PRIORITY_CITIES = {
-    "Jakarta":   {"population_m": 31.0,  "gdp_b_usd": 200, "grid_zone": "Java-Bali", "smart_building_penetration": 0.08},
-    "Surabaya":  {"population_m": 2.9,   "gdp_b_usd": 50,  "grid_zone": "Java-Bali", "smart_building_penetration": 0.04},
-    "Bandung":   {"population_m": 2.5,   "gdp_b_usd": 25,  "grid_zone": "Java-Bali", "smart_building_penetration": 0.05},
-    "Medan":     {"population_m": 2.4,   "gdp_b_usd": 30,  "grid_zone": "Sumatra",   "smart_building_penetration": 0.02},
-    "Semarang":  {"population_m": 1.7,   "gdp_b_usd": 20,  "grid_zone": "Java-Bali", "smart_building_penetration": 0.03},
+    "Jakarta":   {"population_m": 31.0,  "gdp_b_usd": 200, "grid_zone": "Java-Bali", "efficiency_adoption": 0.08},
+    "Surabaya":  {"population_m": 2.9,   "gdp_b_usd": 50,  "grid_zone": "Java-Bali", "efficiency_adoption": 0.04},
+    "Bandung":   {"population_m": 2.5,   "gdp_b_usd": 25,  "grid_zone": "Java-Bali", "efficiency_adoption": 0.05},
+    "Medan":     {"population_m": 2.4,   "gdp_b_usd": 30,  "grid_zone": "Sumatra",   "efficiency_adoption": 0.02},
+    "Semarang":  {"population_m": 1.7,   "gdp_b_usd": 20,  "grid_zone": "Java-Bali", "efficiency_adoption": 0.03},
 }
 
 GRID_ZONES = {
@@ -70,10 +73,19 @@ GRID_ZONES = {
     "Papua-NTT":  {"capacity_gw": 3.0,  "demand_gw": 1.5,  "interconnected": False},
 }
 
-# Smart building energy impact (from Feature Expansion Roadmap)
-SMART_BUILDING_SAVINGS = {
+# Crude oil / fuel subsidy constants (Indonesia-specific)
+CRUDE_OIL_BASELINE_USD_BBL = 80.0       # baseline Brent price
+FUEL_SUBSIDY_BUDGET_B_IDR = 150_000     # ~Rp 150T annual fuel subsidy budget
+BBM_CONSUMPTION_MBPD = 1.6              # Indonesia consumes ~1.6M bbl/day
+NET_OIL_IMPORT_MBPD = 0.6              # net importer of ~600K bbl/day
+IDR_PER_USD = 15_800                    # approximate exchange rate
+TRANSPORT_SHARE_OF_GDP = 0.05           # transport ~5% of GDP
+FUEL_SHARE_OF_CPI = 0.08               # fuel ~8% weight in CPI basket
+
+# Energy efficiency potential (general estimates, not platform-specific)
+EFFICIENCY_POTENTIAL = {
     "hvac_optimization":    0.25,   # 20-30% → midpoint
-    "smart_lighting":       0.50,   # 40-60% → midpoint
+    "lighting_retrofit":    0.50,   # 40-60% → midpoint
     "occupancy_management": 0.20,   # 15-25% → midpoint
     "peak_demand_shift":    0.15,   # 10-20% → midpoint
     "predictive_maintenance": 0.10, # 5-15% → midpoint
@@ -95,6 +107,11 @@ class CrisisScenario:
     affected_zones: List[str]
     trigger: str
     probability_annual: float   # estimated annual probability
+    # Oil-specific fields (only used by crude_oil_price_shock)
+    oil_price_multiplier: float = 1.0       # e.g. 2.0 = price doubles
+    fuel_subsidy_overrun_pct: float = 0.0   # extra fiscal burden
+    inflation_impact_pct: float = 0.0       # CPI increase
+    transport_disruption_pct: float = 0.0   # transport GDP loss
 
 @dataclass
 class MonthlySnapshot:
@@ -104,11 +121,16 @@ class MonthlySnapshot:
     reserve_margin: float
     deficit_gw: float
     load_shedding_gw: float
-    smart_savings_gw: float
+    efficiency_savings_gw: float
     energy_mix: Dict[str, float]
     crisis_active: Optional[str]
     tariff_idr_kwh: float
     co2_mt: float
+    # Oil-shock specific (zero for non-oil scenarios)
+    oil_price_usd_bbl: float = 0.0
+    fuel_subsidy_cost_b_idr: float = 0.0
+    inflation_pct: float = 0.0
+    transport_loss_m_usd: float = 0.0
 
 @dataclass
 class CityImpact:
@@ -116,8 +138,9 @@ class CityImpact:
     population_affected_m: float
     blackout_hours: float
     economic_loss_m_usd: float
-    smart_building_mitigation_pct: float
-    buildings_with_smart_system: int
+    efficiency_mitigation_pct: float
+    fuel_subsidy_burden_m_usd: float = 0.0
+    transport_loss_m_usd: float = 0.0
 
 @dataclass
 class SimulationResult:
@@ -182,6 +205,24 @@ CRISIS_SCENARIOS = [
         probability_annual=0.20,
     ),
     CrisisScenario(
+        name="crude_oil_price_shock",
+        description="Global crude oil price spike (2x) due to Middle East conflict or OPEC+ cuts. "
+                    "Indonesia as net oil importer faces ballooning fuel subsidies (BBM), "
+                    "Rupiah depreciation, inflation surge, and transport sector disruption. "
+                    "Oil-fired power plants (2.4% of mix) become extremely expensive.",
+        severity=0.65,
+        duration_days=180,
+        supply_reduction_pct=0.03,       # oil-fired plants curtailed
+        demand_increase_pct=0.0,
+        affected_zones=["Java-Bali", "Sumatra", "Kalimantan", "Sulawesi", "Papua-NTT"],
+        trigger="Middle East conflict / OPEC+ production cuts / sanctions disruption",
+        probability_annual=0.20,
+        oil_price_multiplier=2.0,        # price doubles from $80 to $160/bbl
+        fuel_subsidy_overrun_pct=0.65,   # 65% budget overrun on fuel subsidies
+        inflation_impact_pct=2.5,        # 2.5% additional CPI inflation
+        transport_disruption_pct=0.15,   # 15% transport GDP loss
+    ),
+    CrisisScenario(
         name="renewable_transition_gap",
         description="Rapid coal plant retirements outpace renewable + storage buildout. "
                     "Structural capacity shortfall emerges during evening peak.",
@@ -203,18 +244,18 @@ CRISIS_SCENARIOS = [
 class IndonesiaEnergyCrisisSimulation:
     """
     Models Indonesia's energy system month-by-month for a given year,
-    injecting crisis scenarios and computing impacts on cities and
-    smart building mitigation potential.
+    injecting crisis scenarios and computing impacts on cities,
+    including oil-specific fiscal and macroeconomic effects.
     """
 
-    def __init__(self, year: int = 2026, smart_adoption_rate: float = 0.05):
+    def __init__(self, year: int = 2026, efficiency_adoption_rate: float = 0.05):
         """
         Args:
             year: Simulation year
-            smart_adoption_rate: Fraction of commercial buildings with smart systems (0-1)
+            efficiency_adoption_rate: Fraction of commercial buildings with efficiency measures (0-1)
         """
         self.year = year
-        self.smart_adoption_rate = smart_adoption_rate
+        self.efficiency_adoption_rate = efficiency_adoption_rate
         self.results: List[SimulationResult] = []
 
         # Demand growth ~5.4% per year from 2025 base
@@ -245,21 +286,50 @@ class IndonesiaEnergyCrisisSimulation:
         total = sum(generation_gwh * mix.get(fuel, 0) * factors.get(fuel, 0) for fuel in mix)
         return total / 1_000_000  # convert to Mt
 
-    def _smart_savings_gw(self, demand_gw: float, zone_adoption: float) -> float:
+    def _efficiency_savings_gw(self, demand_gw: float, adoption_rate: float) -> float:
         """
-        Calculate demand reduction from smart building systems.
-        Uses savings rates from Feature Expansion Roadmap.
+        Calculate demand reduction from energy efficiency measures.
         """
         # Commercial buildings are ~40% of electricity demand in urban Indonesia
         commercial_share = 0.40
         commercial_demand = demand_gw * commercial_share
 
-        # Weighted average savings across all smart building features
-        avg_savings = sum(SMART_BUILDING_SAVINGS.values()) / len(SMART_BUILDING_SAVINGS)
+        # Weighted average savings across efficiency measures
+        avg_savings = sum(EFFICIENCY_POTENTIAL.values()) / len(EFFICIENCY_POTENTIAL)
 
         # Only adopted buildings contribute
-        savings = commercial_demand * zone_adoption * avg_savings
+        savings = commercial_demand * adoption_rate * avg_savings
         return round(savings, 3)
+
+    def _compute_oil_impact(self, scenario: 'CrisisScenario', is_crisis: bool) -> dict:
+        """
+        Compute crude oil price shock impacts: fuel subsidy overrun,
+        inflation, and transport sector loss.
+        """
+        if not is_crisis or scenario.oil_price_multiplier <= 1.0:
+            return {"oil_price": CRUDE_OIL_BASELINE_USD_BBL, "subsidy_cost": 0, "inflation": 0, "transport_loss": 0}
+
+        oil_price = CRUDE_OIL_BASELINE_USD_BBL * scenario.oil_price_multiplier
+
+        # Fuel subsidy overrun (monthly)
+        # Extra cost = (new price - baseline) * net imports * 30 days
+        extra_import_cost_usd = (oil_price - CRUDE_OIL_BASELINE_USD_BBL) * NET_OIL_IMPORT_MBPD * 1_000_000 * 30
+        subsidy_cost_b_idr = (extra_import_cost_usd * IDR_PER_USD) / 1e12  # in trillion IDR
+
+        # Inflation impact (fuel price pass-through)
+        inflation = scenario.inflation_impact_pct
+
+        # Transport GDP loss (monthly, in $M USD)
+        # Indonesia GDP ~$1.3T, transport 5%, disruption pct per month
+        annual_transport_gdp_m = 1_300_000 * TRANSPORT_SHARE_OF_GDP
+        transport_loss_m = annual_transport_gdp_m * scenario.transport_disruption_pct / 12
+
+        return {
+            "oil_price": round(oil_price, 2),
+            "subsidy_cost": round(subsidy_cost_b_idr, 2),
+            "inflation": round(inflation, 2),
+            "transport_loss": round(transport_loss_m, 1),
+        }
 
     def _compute_tariff(self, base_tariff: float, reserve_margin: float,
                         crisis_active: bool) -> float:
@@ -279,7 +349,9 @@ class IndonesiaEnergyCrisisSimulation:
         print(f"  SCENARIO: {scenario.name.upper().replace('_', ' ')}")
         print(f"  Severity: {scenario.severity:.0%} | Duration: {scenario.duration_days}d")
         print(f"  Affected zones: {', '.join(scenario.affected_zones)}")
-        print(f"  Smart building adoption: {self.smart_adoption_rate:.1%}")
+        print(f"  Efficiency adoption: {self.efficiency_adoption_rate:.1%}")
+        if scenario.oil_price_multiplier > 1.0:
+            print(f"  Oil price: ${CRUDE_OIL_BASELINE_USD_BBL}/bbl → ${CRUDE_OIL_BASELINE_USD_BBL * scenario.oil_price_multiplier}/bbl")
         print(f"{'='*70}")
 
         # Determine crisis months
@@ -289,7 +361,9 @@ class IndonesiaEnergyCrisisSimulation:
         monthly_data = []
         total_deficit = 0
         total_shedding = 0
-        total_smart_savings = 0
+        total_efficiency_savings = 0
+        total_subsidy_cost = 0
+        total_transport_loss = 0
 
         for month in range(1, 13):
             month_name = datetime(self.year, month, 1).strftime("%b %Y")
@@ -312,9 +386,9 @@ class IndonesiaEnergyCrisisSimulation:
                 ) / self.capacity_gw
                 supply *= (1 - scenario.supply_reduction_pct * affected_capacity_share)
 
-            # Smart building demand reduction
-            smart_savings = self._smart_savings_gw(demand, self.smart_adoption_rate)
-            effective_demand = demand - smart_savings
+            # Efficiency demand reduction
+            eff_savings = self._efficiency_savings_gw(demand, self.efficiency_adoption_rate)
+            effective_demand = demand - eff_savings
 
             # Deficit and load shedding
             deficit = max(0, effective_demand - supply)
@@ -329,6 +403,9 @@ class IndonesiaEnergyCrisisSimulation:
             if is_crisis and "gas" in scenario.name:
                 mix["natural_gas"] *= (1 - scenario.supply_reduction_pct)
                 mix["coal"] += mix["natural_gas"] * scenario.supply_reduction_pct * 0.5
+            if is_crisis and "oil" in scenario.name:
+                mix["oil"] *= (1 - scenario.supply_reduction_pct)
+                mix["coal"] += mix["oil"] * scenario.supply_reduction_pct * 0.7
 
             # Normalize mix
             total_mix = sum(mix.values())
@@ -341,6 +418,9 @@ class IndonesiaEnergyCrisisSimulation:
             # Tariff
             tariff = self._compute_tariff(AVERAGE_TARIFF_IDR_KWH, reserve_margin, is_crisis)
 
+            # Oil price shock impacts
+            oil_impact = self._compute_oil_impact(scenario, is_crisis)
+
             snapshot = MonthlySnapshot(
                 month=month_name,
                 demand_gw=round(demand, 2),
@@ -348,23 +428,30 @@ class IndonesiaEnergyCrisisSimulation:
                 reserve_margin=round(reserve_margin, 4),
                 deficit_gw=round(deficit, 2),
                 load_shedding_gw=round(load_shedding, 2),
-                smart_savings_gw=round(smart_savings, 3),
+                efficiency_savings_gw=round(eff_savings, 3),
                 energy_mix=mix,
                 crisis_active=scenario.name if is_crisis else None,
                 tariff_idr_kwh=tariff,
                 co2_mt=round(co2, 2),
+                oil_price_usd_bbl=oil_impact["oil_price"],
+                fuel_subsidy_cost_b_idr=oil_impact["subsidy_cost"],
+                inflation_pct=oil_impact["inflation"],
+                transport_loss_m_usd=oil_impact["transport_loss"],
             )
             monthly_data.append(asdict(snapshot))
             total_deficit += deficit
             total_shedding += load_shedding
-            total_smart_savings += smart_savings
+            total_efficiency_savings += eff_savings
+            total_subsidy_cost += oil_impact["subsidy_cost"]
+            total_transport_loss += oil_impact["transport_loss"]
 
             # Print monthly status
             status = "CRISIS" if is_crisis else "NORMAL"
             margin_str = f"{reserve_margin:.1%}"
+            oil_str = f" | Oil: ${oil_impact['oil_price']}/bbl" if oil_impact["oil_price"] > CRUDE_OIL_BASELINE_USD_BBL else ""
             print(f"  {month_name:>8} | {status:>7} | Demand: {demand:.1f} GW | "
                   f"Supply: {supply:.1f} GW | Margin: {margin_str:>6} | "
-                  f"Smart Savings: {smart_savings:.2f} GW | Deficit: {deficit:.1f} GW")
+                  f"Eff Savings: {eff_savings:.2f} GW | Deficit: {deficit:.1f} GW{oil_str}")
 
         # City-level impact analysis
         city_impacts = []
@@ -372,34 +459,41 @@ class IndonesiaEnergyCrisisSimulation:
             zone = info["grid_zone"]
             zone_affected = zone in scenario.affected_zones
 
-            if zone_affected and total_deficit > 0:
+            if zone_affected and (total_deficit > 0 or total_transport_loss > 0):
                 # Blackout hours proportional to city's share of zone demand
                 zone_demand = GRID_ZONES[zone]["demand_gw"]
                 city_demand_share = info["population_m"] / 50.0  # rough share
-                blackout_hours = (total_shedding / zone_demand) * scenario.duration_days * 2 * city_demand_share
+                blackout_hours = (total_shedding / zone_demand) * scenario.duration_days * 2 * city_demand_share if total_deficit > 0 else 0
                 blackout_hours = min(blackout_hours, scenario.duration_days * 8)  # cap at 8h/day
 
                 # Economic loss: ~$0.5M per GWh unserved (World Bank estimate for developing Asia)
                 unserved_gwh = (total_shedding * city_demand_share * 730 * 0.3)
                 economic_loss = unserved_gwh * 0.5
 
-                # Smart building mitigation
-                city_adoption = max(info["smart_building_penetration"], self.smart_adoption_rate)
-                mitigation = city_adoption * sum(SMART_BUILDING_SAVINGS.values()) / len(SMART_BUILDING_SAVINGS) * 100
-                buildings = int(info["population_m"] * 1000 * 0.02 * city_adoption)  # 2% are commercial buildings
+                # Efficiency mitigation
+                city_adoption = max(info["efficiency_adoption"], self.efficiency_adoption_rate)
+                mitigation = city_adoption * sum(EFFICIENCY_POTENTIAL.values()) / len(EFFICIENCY_POTENTIAL) * 100
+
+                # Oil-specific city impacts
+                city_gdp_share = info["gdp_b_usd"] / 1300  # share of national GDP
+                city_fuel_subsidy = total_subsidy_cost * city_gdp_share
+                city_transport_loss = total_transport_loss * city_gdp_share
+                economic_loss += city_transport_loss  # transport loss adds to total
             else:
                 blackout_hours = 0
                 economic_loss = 0
                 mitigation = 0
-                buildings = 0
+                city_fuel_subsidy = 0
+                city_transport_loss = 0
 
             impact = CityImpact(
                 city=city,
                 population_affected_m=round(info["population_m"] if zone_affected else 0, 1),
                 blackout_hours=round(blackout_hours, 1),
                 economic_loss_m_usd=round(economic_loss, 1),
-                smart_building_mitigation_pct=round(mitigation, 1),
-                buildings_with_smart_system=buildings,
+                efficiency_mitigation_pct=round(mitigation, 1),
+                fuel_subsidy_burden_m_usd=round(city_fuel_subsidy * 1000 / IDR_PER_USD, 1),  # convert T IDR to $M
+                transport_loss_m_usd=round(city_transport_loss, 1),
             )
             city_impacts.append(asdict(impact))
 
@@ -411,28 +505,38 @@ class IndonesiaEnergyCrisisSimulation:
             "scenario": scenario.name,
             "severity": scenario.severity,
             "year": self.year,
-            "smart_adoption_rate": self.smart_adoption_rate,
+            "efficiency_adoption_rate": self.efficiency_adoption_rate,
             "total_deficit_gw_months": round(total_deficit, 2),
             "total_load_shedding_gw_months": round(total_shedding, 2),
-            "total_smart_savings_gw_months": round(total_smart_savings, 2),
+            "total_efficiency_savings_gw_months": round(total_efficiency_savings, 2),
             "total_economic_loss_m_usd": round(total_economic_loss, 1),
             "total_population_affected_m": round(total_population_affected, 1),
             "peak_tariff_idr_kwh": max(m["tariff_idr_kwh"] for m in monthly_data),
             "avg_co2_mt_per_month": round(sum(m["co2_mt"] for m in monthly_data) / 12, 2),
             "crisis_months": crisis_end_month - crisis_start_month + 1,
             "worst_month_deficit_gw": max(m["deficit_gw"] for m in monthly_data),
-            "demand_reduced_by_smart_pct": round(
-                (total_smart_savings / (sum(m["demand_gw"] for m in monthly_data))) * 100, 2
-            ) if total_smart_savings > 0 else 0,
+            "demand_reduced_by_efficiency_pct": round(
+                (total_efficiency_savings / (sum(m["demand_gw"] for m in monthly_data))) * 100, 2
+            ) if total_efficiency_savings > 0 else 0,
+            # Oil-specific summary fields
+            "total_fuel_subsidy_overrun_t_idr": round(total_subsidy_cost, 2),
+            "total_transport_loss_m_usd": round(total_transport_loss, 1),
+            "peak_oil_price_usd_bbl": max(m["oil_price_usd_bbl"] for m in monthly_data),
+            "peak_inflation_pct": max(m["inflation_pct"] for m in monthly_data),
         }
 
         print(f"\n  SUMMARY:")
         print(f"    Total deficit:           {summary['total_deficit_gw_months']:.1f} GW-months")
-        print(f"    Smart system savings:    {summary['total_smart_savings_gw_months']:.1f} GW-months")
-        print(f"    Demand reduced by smart: {summary['demand_reduced_by_smart_pct']:.2f}%")
+        print(f"    Efficiency savings:      {summary['total_efficiency_savings_gw_months']:.1f} GW-months")
+        print(f"    Demand reduced:          {summary['demand_reduced_by_efficiency_pct']:.2f}%")
         print(f"    Economic loss:           ${summary['total_economic_loss_m_usd']:.0f}M USD")
         print(f"    Population affected:     {summary['total_population_affected_m']:.1f}M people")
         print(f"    Peak tariff:             Rp {summary['peak_tariff_idr_kwh']:,}/kWh")
+        if summary['peak_oil_price_usd_bbl'] > CRUDE_OIL_BASELINE_USD_BBL:
+            print(f"    Peak oil price:          ${summary['peak_oil_price_usd_bbl']}/bbl")
+            print(f"    Fuel subsidy overrun:    Rp {summary['total_fuel_subsidy_overrun_t_idr']:.1f}T")
+            print(f"    Transport sector loss:   ${summary['total_transport_loss_m_usd']:.0f}M USD")
+            print(f"    Peak inflation impact:   +{summary['peak_inflation_pct']:.1f}%")
 
         result = SimulationResult(
             scenario=scenario.name,
@@ -448,7 +552,7 @@ class IndonesiaEnergyCrisisSimulation:
         """Run all crisis scenarios."""
         print(f"\n{'#'*70}")
         print(f"  INDONESIA ENERGY CRISIS MODEL — Year {self.year}")
-        print(f"  Smart Building Adoption Rate: {self.smart_adoption_rate:.1%}")
+        print(f"  Efficiency Adoption Rate: {self.efficiency_adoption_rate:.1%}")
         print(f"  Installed Capacity: {self.capacity_gw:.1f} GW")
         print(f"  Base Peak Demand: {INDONESIA_PEAK_DEMAND_GW * self.demand_growth:.1f} GW")
         print(f"{'#'*70}")
@@ -458,27 +562,26 @@ class IndonesiaEnergyCrisisSimulation:
             results.append(self.run_scenario(scenario))
         return results
 
-    def compare_smart_adoption(self, scenario: CrisisScenario,
-                                adoption_rates: List[float] = None) -> Dict:
+    def compare_efficiency_adoption(self, scenario: CrisisScenario,
+                                    adoption_rates: List[float] = None) -> Dict:
         """
-        Compare outcomes under different smart building adoption rates.
-        Demonstrates ROI of the Smart Home/Office platform.
+        Compare outcomes under different energy efficiency adoption rates.
         """
         if adoption_rates is None:
             adoption_rates = [0.0, 0.05, 0.10, 0.20, 0.35, 0.50]
 
         print(f"\n{'='*70}")
-        print(f"  SMART ADOPTION COMPARISON: {scenario.name.upper().replace('_', ' ')}")
+        print(f"  EFFICIENCY ADOPTION COMPARISON: {scenario.name.upper().replace('_', ' ')}")
         print(f"{'='*70}")
         print(f"  {'Adoption':>10} | {'Deficit GW-mo':>14} | {'Savings GW-mo':>14} | {'Loss $M':>10} | {'Mitigation':>10}")
         print(f"  {'-'*10}-+-{'-'*14}-+-{'-'*14}-+-{'-'*10}-+-{'-'*10}")
 
         comparison = []
         for rate in adoption_rates:
-            original_rate = self.smart_adoption_rate
-            self.smart_adoption_rate = rate
+            original_rate = self.efficiency_adoption_rate
+            self.efficiency_adoption_rate = rate
             result = self.run_scenario(scenario)
-            self.smart_adoption_rate = original_rate
+            self.efficiency_adoption_rate = original_rate
 
             s = result.summary
             baseline_loss = comparison[0]["economic_loss_m_usd"] if comparison else s["total_economic_loss_m_usd"]
@@ -487,13 +590,13 @@ class IndonesiaEnergyCrisisSimulation:
             row = {
                 "adoption_rate": rate,
                 "deficit_gw_months": s["total_deficit_gw_months"],
-                "smart_savings_gw_months": s["total_smart_savings_gw_months"],
+                "efficiency_savings_gw_months": s["total_efficiency_savings_gw_months"],
                 "economic_loss_m_usd": s["total_economic_loss_m_usd"],
                 "loss_mitigation_pct": round(mitigation, 1),
             }
             comparison.append(row)
             print(f"  {rate:>9.0%} | {s['total_deficit_gw_months']:>14.2f} | "
-                  f"{s['total_smart_savings_gw_months']:>14.2f} | "
+                  f"{s['total_efficiency_savings_gw_months']:>14.2f} | "
                   f"${s['total_economic_loss_m_usd']:>9.0f} | {mitigation:>9.1f}%")
 
         return {"scenario": scenario.name, "comparison": comparison}
@@ -502,18 +605,25 @@ class IndonesiaEnergyCrisisSimulation:
         """Export all results to JSON for dashboard consumption."""
         output = {
             "metadata": {
-                "model": "Indonesia Energy Crisis Model v1.0",
+                "model": "Indonesia Energy Crisis Model v2.0",
                 "generated_at": datetime.now().isoformat(),
                 "year": self.year,
-                "smart_adoption_rate": self.smart_adoption_rate,
+                "efficiency_adoption_rate": self.efficiency_adoption_rate,
                 "installed_capacity_gw": self.capacity_gw,
                 "base_peak_demand_gw": round(INDONESIA_PEAK_DEMAND_GW * self.demand_growth, 2),
+                "crude_oil_baseline_usd_bbl": CRUDE_OIL_BASELINE_USD_BBL,
             },
             "constants": {
                 "energy_mix": ENERGY_MIX,
                 "grid_zones": {k: v for k, v in GRID_ZONES.items()},
                 "priority_cities": PRIORITY_CITIES,
-                "smart_building_savings": SMART_BUILDING_SAVINGS,
+                "efficiency_potential": EFFICIENCY_POTENTIAL,
+                "oil_constants": {
+                    "baseline_price_usd_bbl": CRUDE_OIL_BASELINE_USD_BBL,
+                    "fuel_subsidy_budget_b_idr": FUEL_SUBSIDY_BUDGET_B_IDR,
+                    "bbm_consumption_mbpd": BBM_CONSUMPTION_MBPD,
+                    "net_oil_import_mbpd": NET_OIL_IMPORT_MBPD,
+                },
             },
             "scenarios": [asdict(s) for s in CRISIS_SCENARIOS],
             "results": [asdict(r) for r in self.results],
@@ -530,25 +640,26 @@ class IndonesiaEnergyCrisisSimulation:
 
 def main():
     print("=" * 70)
-    print("  INDONESIA ENERGY CRISIS MODEL")
-    print("  Smart Home and Smart Office System")
-    print("  Modeling energy supply-demand dynamics & smart building mitigation")
+    print("  INDONESIA ENERGY CRISIS MODEL v2.0")
+    print("  Multi-commodity: Coal, LNG, Crude Oil, Renewables")
+    print("  Modeling energy supply-demand dynamics & macroeconomic impacts")
     print("=" * 70)
 
-    # Run baseline simulation (current ~5% smart building adoption)
-    sim = IndonesiaEnergyCrisisSimulation(year=2026, smart_adoption_rate=0.05)
+    # Run baseline simulation (current ~5% efficiency adoption)
+    sim = IndonesiaEnergyCrisisSimulation(year=2026, efficiency_adoption_rate=0.05)
     sim.run_all_scenarios()
 
-    # Compare smart adoption impact for the most likely scenario
+    # Compare efficiency adoption impact for key scenarios
     print("\n\n" + "#" * 70)
-    print("  SMART BUILDING ROI ANALYSIS")
+    print("  EFFICIENCY ADOPTION ANALYSIS")
     print("#" * 70)
 
-    renewable_gap = CRISIS_SCENARIOS[4]  # renewable_transition_gap (most probable)
+    renewable_gap = CRISIS_SCENARIOS[5]  # renewable_transition_gap (most probable)
     heat_wave = CRISIS_SCENARIOS[1]      # extreme_heat_wave
+    oil_shock = CRISIS_SCENARIOS[4]      # crude_oil_price_shock
 
-    sim.compare_smart_adoption(renewable_gap)
-    sim.compare_smart_adoption(heat_wave)
+    sim.compare_efficiency_adoption(renewable_gap)
+    sim.compare_efficiency_adoption(heat_wave)
 
     # Export results
     export_path = "/home/user/Smart-Home-and-Smart-Office-System/indonesia-energy-crisis-model/simulation_results.json"
@@ -556,7 +667,7 @@ def main():
 
     # Print key insights
     print("\n" + "=" * 70)
-    print("  KEY INSIGHTS FOR SMART HOME & SMART OFFICE SYSTEM")
+    print("  KEY INSIGHTS — INDONESIA ENERGY CRISIS MODEL")
     print("=" * 70)
     print("""
     1. COAL DEPENDENCY RISK: Indonesia's 61.7% coal reliance creates acute
@@ -567,27 +678,29 @@ def main():
        demand (+25% AC load) and reduce supply (-10% hydro). This dual
        stress is the most frequent crisis scenario (25% annual probability).
 
-    3. SMART BUILDING IMPACT: At 20% adoption, smart building systems can
-       reduce peak demand by 2-4%, preventing ~30% of load shedding events.
-       At 50% adoption, economic losses drop by 40-60%.
+    3. CRUDE OIL VULNERABILITY: As a net oil importer (~600K bbl/day),
+       Indonesia faces triple exposure from oil price shocks:
+       - FISCAL: Fuel subsidy (BBM) budget overruns of 50-65% (~Rp 97T extra)
+       - INFLATION: 2-3% additional CPI from fuel price pass-through
+       - TRANSPORT: 15% transport GDP loss ($812M/month) from higher fuel costs
+       - CURRENCY: Rupiah depreciation pressure from widening trade deficit
+       Oil-fired generation (2.4% of mix) also becomes uneconomic.
 
-    4. PLATFORM VALUE PROPOSITION: Our smart building platform directly
-       addresses Indonesia's energy crisis through:
+    4. LNG PRICE SENSITIVITY: Global LNG price spikes (3x) reduce gas-fired
+       generation by 12%. Unlike oil, LNG primarily affects electricity costs
+       rather than transport or inflation.
+
+    5. ENERGY EFFICIENCY POTENTIAL: Key demand-side measures include:
        - HVAC optimization (25% savings) — biggest single lever
-       - Smart lighting (50% savings) — fastest ROI
+       - Lighting retrofit (50% savings) — fastest ROI
        - Peak demand shifting (15% savings) — grid stability
        - Occupancy management (20% savings) — commercial buildings
-       - Predictive maintenance (10% savings) — system reliability
-
-    5. MARKET OPPORTUNITY: Energy crisis awareness accelerates smart
-       building adoption. Indonesia's $2.5-3B TAM grows as businesses
-       seek energy resilience. Our platform is positioned as both a
-       cost-saving tool AND a crisis mitigation infrastructure.
+       At 20% adoption, these can reduce peak demand by 2-4%.
 
     6. POLICY ALIGNMENT: Indonesia's RUPTL (national electricity plan)
        targets 23% renewable energy by 2025. The transition gap creates
        the most probable crisis scenario (30% annual probability).
-       Smart demand management bridges this gap.
+       Energy efficiency measures help bridge this gap.
     """)
 
     return data
